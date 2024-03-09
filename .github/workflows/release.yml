@@ -1,4 +1,5 @@
 name: Publish to PyPI
+
 on:
   release:
     types: [published]
@@ -7,7 +8,7 @@ on:
       - main
 jobs:
   build:
-    name: Build distribution
+    name: Build distribution 📦
     runs-on: ubuntu-latest
 
     steps:
@@ -21,7 +22,7 @@ jobs:
         run: |
           pipx install hatch
           pip list
-      - name: Build package using Hatch
+      - name: Build binary wheel and source tarball using Hatch
         run: |
           hatch build
           echo ""
@@ -32,9 +33,9 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
-      
+     
   pypi-publish:
-    name: upload release to PyPI
+    name: Upload release to PyPI
     if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
     needs:
     - build
@@ -50,5 +51,5 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
-      - name: Publish package distributions to PyPI
+      - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
