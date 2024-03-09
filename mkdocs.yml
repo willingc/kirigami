@@ -1,3 +1,8 @@
 site_name: kirigami
 theme:
   name: material
+
+# Page tree
+nav:
+  - Home: index.md
+  - Tools: tools.md
