@@ -39,3 +39,6 @@ Discourse didn't find existing models good enough and switched to LLMs
 
 Fairly inflexible at the moment
 
+### Another option Merfield's plugin
+
+https://github.com/merefield/discourse-ai-topic-summary
