@@ -42,3 +42,7 @@ Fairly inflexible at the moment
 ### Another option Merfield's plugin
 
 https://github.com/merefield/discourse-ai-topic-summary
+
+Ruby - Discourse bot
+
+JavaScript - Display on page
