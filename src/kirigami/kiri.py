@@ -7,10 +7,10 @@ from .ingest import get_categories, load_config, load_query_auth
 @click.command()
 def ingest():
     """Ingest the messages."""
-    print('Ingested messages.')
     load_config()
     load_query_auth()
     get_categories()
+    print('Ingested messages.')
 
 
 @click.command()
