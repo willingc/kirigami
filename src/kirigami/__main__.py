@@ -1,5 +1,15 @@
-from kirigami.cli import kirigami
+"""" __main__.py"""
 
-if __name__ == '__main__':
-    kirigami()
+import click
 
+from . import kiri
+
+@click.group()
+def cli():
+    pass
+
+
+cli.add_command(kiri.ingest)
+cli.add_command(kiri.pretty)
+cli.add_command(kiri.raw)
+cli.add_command(kiri.celebrate)

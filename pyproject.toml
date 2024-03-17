@@ -21,7 +21,16 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
 ]
-dependencies = []
+dependencies = [
+  "click",
+  "click-default-group",
+  "httpx",
+  "sqlite-utils",
+  "trogon"
+]
+
+[project.scripts]
+kiri = "kirigami.__main__:cli"
 
 [project.urls]
 Documentation = "https://github.com/willingc/kirigami#readme"
