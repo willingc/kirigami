@@ -1,6 +1,5 @@
 import click
 from click_default_group import DefaultGroup
-import kirigami
 from trogon import tui
 
 
@@ -51,4 +50,3 @@ cli.add_command(celebrate)
 
 if __name__ == '__main__':
     cli(obj={})
-
