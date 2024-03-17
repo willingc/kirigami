@@ -25,7 +25,8 @@ dependencies = [
   "click",
   "click-default-group",
   "httpx",
-  "sqlite-utils"
+  "sqlite-utils",
+  "trogon"
 ]
 
 [project.scripts]

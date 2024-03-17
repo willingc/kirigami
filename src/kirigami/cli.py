@@ -17,30 +17,37 @@ def cli(ctx, verbose):
 
 
 @click.command()
-def createDB():
-    """Create the database."""
-    print('created database')
+def ingest():
+    """Ingest the messages."""
+    print('Ingested messages.')
 
 
 @click.command()
-def deleteDB():
-    """Delete the database."""
-    print('deleted database')
+def pretty():
+    """Display pretty messages."""
+    print('Displayed pretty messages.')
+
+
+@click.command()
+def display():
+    """Display raw messages."""
+    print('Display raw messages.')
 
 
 @click.command()
 @click.option('--count', default=1,
               help='The number of times to execute.')
 @click.argument('name')
-def hello(count, name):
+def celebrate(count, name):
     """Say hello."""
     for x in range(count):
         click.echo(f"Hello {name}!")
 
 
-cli.add_command(createDB)
-cli.add_command(deleteDB)
-cli.add_command(hello)
+cli.add_command(ingest)
+cli.add_command(pretty)
+cli.add_command(display)
+cli.add_command(celebrate)
 
 if __name__ == '__main__':
     cli(obj={})
