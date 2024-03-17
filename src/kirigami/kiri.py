@@ -1,11 +1,14 @@
 """kiri.py"""
 import click
 
+from .ingest import load_config, get_categories
 
 @click.command()
 def ingest():
     """Ingest the messages."""
     print('Ingested messages.')
+    load_config()
+    get_categories()
 
 
 @click.command()

@@ -11,5 +11,5 @@ def cli():
 
 cli.add_command(kiri.ingest)
 cli.add_command(kiri.pretty)
-cli.add_command(kiri.display)
+cli.add_command(kiri.raw)
 cli.add_command(kiri.celebrate)
