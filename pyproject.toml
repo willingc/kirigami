@@ -30,7 +30,7 @@ dependencies = [
 ]
 
 [project.scripts]
-kirigami = "kirigami:cli"
+kiri = "kirigami.__main__:cli"
 
 [project.urls]
 Documentation = "https://github.com/willingc/kirigami#readme"
