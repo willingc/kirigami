@@ -1,5 +1,4 @@
-from kirigami.cli import kirigami
+from .cli import cli
 
 if __name__ == '__main__':
-    kirigami()
-
+    cli()
