@@ -24,6 +24,7 @@ classifiers = [
 dependencies = [
   "click",
   "click-default-group",
+  "flatten_json",
   "httpx",
   "json-flatten",
   "pyjanitor",
