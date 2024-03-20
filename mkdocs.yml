@@ -6,6 +6,7 @@ theme:
 nav:
   - Home: index.md
   - Tools: tools.md
+  - JSON Tools: json_tools.md
   - Real World: realworld.md
   - Use case: usecase.md
   - Systems Thinking: systems_thinking.md
