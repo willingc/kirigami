@@ -25,6 +25,8 @@ dependencies = [
   "click",
   "click-default-group",
   "httpx",
+  "json-flatten",
+  "pyjanitor",
   "sqlite-utils",
   "trogon"
 ]
