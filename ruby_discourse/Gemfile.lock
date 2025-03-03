@@ -18,7 +18,7 @@ GEM
     net-http (0.4.1)
       uri
     rack (3.0.9.1)
-    uri (0.13.0)
+    uri (0.13.2)
 
 PLATFORMS
   arm64-darwin-23
