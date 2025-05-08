@@ -17,7 +17,7 @@ GEM
     multipart-post (2.4.0)
     net-http (0.4.1)
       uri
-    rack (3.0.9.1)
+    rack (3.0.16)
     uri (0.13.0)
 
 PLATFORMS
