@@ -32,6 +32,11 @@ dependencies = [
   "trogon"
 ]
 
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+]
+
 [project.scripts]
 kiri = "kirigami.__main__:cli"
 
@@ -39,6 +44,18 @@ kiri = "kirigami.__main__:cli"
 Documentation = "https://github.com/willingc/kirigami#readme"
 Issues = "https://github.com/willingc/kirigami/issues"
 Source = "https://github.com/willingc/kirigami"
+
+[tool]
+rye = { dev-dependencies = [
+    "jupyterlab>=4.1.8",
+    "pandas>=2.2.2",
+    "seaborn>=0.13.2",
+    "numpy>=1.26.4",
+    "scipy>=1.13.0",
+    "matplotlib>=3.8.4",
+    "python-dotenv>=1.0.1",
+    "httpx>=0.27.0",
+] }
 
 [tool.hatch.version]
 path = "src/kirigami/__about__.py"
