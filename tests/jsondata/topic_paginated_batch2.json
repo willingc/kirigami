@@ -1,0 +1,11 @@
+{
+  "post_stream": {
+    "posts": [
+      {"id": 2021, "post_number": 21, "username": "alice", "created_at": "2024-01-01T20:00:00.000Z", "updated_at": "2024-01-01T20:00:00.000Z", "raw": "Post 21", "cooked": "", "reply_count": 0, "quote_count": 0, "reads": 1, "score": 1.0},
+      {"id": 2022, "post_number": 22, "username": "bob", "created_at": "2024-01-01T21:00:00.000Z", "updated_at": "2024-01-01T21:00:00.000Z", "raw": "Post 22", "cooked": "", "reply_count": 0, "quote_count": 0, "reads": 1, "score": 1.0},
+      {"id": 2023, "post_number": 23, "username": "alice", "created_at": "2024-01-01T22:00:00.000Z", "updated_at": "2024-01-01T22:00:00.000Z", "raw": "Post 23", "cooked": "", "reply_count": 0, "quote_count": 0, "reads": 1, "score": 1.0},
+      {"id": 2024, "post_number": 24, "username": "bob", "created_at": "2024-01-01T23:00:00.000Z", "updated_at": "2024-01-01T23:00:00.000Z", "raw": "Post 24", "cooked": "", "reply_count": 0, "quote_count": 0, "reads": 1, "score": 1.0},
+      {"id": 2025, "post_number": 25, "username": "alice", "created_at": "2024-02-01T12:00:00.000Z", "updated_at": "2024-02-01T12:00:00.000Z", "raw": "Post 25", "cooked": "", "reply_count": 0, "quote_count": 0, "reads": 1, "score": 1.0}
+    ]
+  }
+}
