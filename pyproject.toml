@@ -28,8 +28,10 @@ dependencies = [
   "httpx",
   "json-flatten",
   "pyjanitor",
+  "requests>=2.34.2",
+  "spacy>=3.8.14",
   "sqlite-utils",
-  "trogon"
+  "trogon",
 ]
 
 [project.optional-dependencies]
