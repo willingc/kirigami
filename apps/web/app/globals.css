@@ -134,24 +134,27 @@ ul {
 
 .briefPanel {
   display: grid;
-  gap: 0;
+  gap: 16px;
   margin: 28px 0 44px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 4px 28px;
-  background: var(--surface);
 }
 
 .briefBlock {
   display: grid;
   align-content: start;
   gap: 14px;
-  border-top: 1px solid var(--line);
-  padding: 28px 0;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: 14px;
+  padding: 28px;
+  background: var(--surface);
 }
 
-.briefBlock:first-child {
-  border-top: 0;
+.briefBlock:nth-child(2) {
+  border-left-color: var(--progress);
+}
+
+.briefBlock:nth-child(3) {
+  border-left-color: var(--contest);
 }
 
 .briefSignalList {
@@ -725,11 +728,11 @@ ul {
   }
 
   .briefPanel {
-    padding: 0 14px;
+    gap: 12px;
   }
 
   .briefBlock {
-    padding: 18px 0;
+    padding: 18px;
   }
 
   .phaseStep {
