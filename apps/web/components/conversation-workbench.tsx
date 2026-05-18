@@ -187,15 +187,6 @@ export default function ConversationWorkbench({
           </footer>
         ) : null}
       </article>
-
-      <aside className="pageIndex" aria-label="On this page">
-        <p>On this page</p>
-        <a href="#brief">Catch-up brief</a>
-        <a href="#path">Reading path</a>
-        <a href="#positions">Positions</a>
-        <a href="#voices">Voices</a>
-        <a href="#source">Source</a>
-      </aside>
     </main>
   );
 }
@@ -216,24 +207,30 @@ function BriefBlock({
   return (
     <section className="briefBlock">
       <h2>{title}</h2>
-      <p>{body}</p>
-      {post ? (
-        <EvidenceDrawer label={`#${post.post_number}`} post={post} />
-      ) : null}
       {signals && postsByNumber ? (
-        <div className="citationRow">
+        <ul className="briefSignalList">
           {signals.map((signal) => {
             const sourcePost = postsByNumber.get(signal.postNumber);
             return sourcePost ? (
-              <EvidenceDrawer
-                key={`${signal.category}-${signal.postNumber}`}
-                label={`#${signal.postNumber}`}
-                post={sourcePost}
-                signal={signal}
-              />
+              <li key={`${signal.category}-${signal.postNumber}`}>
+                <p>
+                  <strong>@{signal.username}</strong>
+                  <span>{signal.evidence}</span>
+                </p>
+                <EvidenceDrawer
+                  label={`#${signal.postNumber}`}
+                  post={sourcePost}
+                  signal={signal}
+                />
+              </li>
             ) : null;
           })}
-        </div>
+        </ul>
+      ) : (
+        <p>{body}</p>
+      )}
+      {post ? (
+        <EvidenceDrawer label={`#${post.post_number}`} post={post} />
       ) : null}
     </section>
   );
