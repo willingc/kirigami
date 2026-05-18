@@ -29,7 +29,7 @@ dependencies = [
   "json-flatten",
   "pyjanitor",
   "requests>=2.34.2",
-  "spacy>=3.8.14",
+  "spacy>=3.8.14; python_version < '3.14'",
   "sqlite-utils",
   "trogon",
 ]
@@ -37,6 +37,10 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0",
+]
+web = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.34",
 ]
 
 [project.scripts]

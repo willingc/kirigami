@@ -1,0 +1,24 @@
+[env]
+KIRIGAMI_PYTHON_VERSION = "3.13"
+NEXT_PUBLIC_API_BASE_URL = "http://127.0.0.1:8000"
+KIRIGAMI_API_BASE_URL = "http://127.0.0.1:8000"
+
+[tasks.setup]
+description = "Install Python and Next.js dependencies."
+run = """
+uv sync --python "$KIRIGAMI_PYTHON_VERSION" --extra dev --extra web
+npm install --prefix apps/web
+"""
+
+[tasks.dev]
+description = "Launch the FastAPI backend and Next.js development server."
+run = "./scripts/dev-web.sh"
+
+[tasks.test]
+description = "Run backend tests and frontend checks."
+run = """
+uv run --python "$KIRIGAMI_PYTHON_VERSION" --extra dev --extra web pytest
+npm run lint --prefix apps/web
+npm run typecheck --prefix apps/web
+npm run build --prefix apps/web
+"""

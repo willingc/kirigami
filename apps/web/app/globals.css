@@ -1,0 +1,670 @@
+:root {
+  --background: #f7f3ed;
+  --surface: #fffefa;
+  --ink: #1f2421;
+  --muted: #68746b;
+  --line: #ded7ca;
+  --green: #12664f;
+  --green-soft: #dcefe7;
+  --coral: #c7503f;
+  --gold: #d69f22;
+  --shadow: 0 18px 40px rgba(31, 36, 33, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--background);
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--background);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 48px;
+}
+
+.topbar,
+.summaryBand,
+.sectionHeader,
+.lookupHeader,
+.postMeta,
+.participantList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.topbar {
+  padding: 6px 0 24px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--coral);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p,
+dl,
+dd,
+ol {
+  margin: 0;
+}
+
+h1 {
+  font-size: 4.25rem;
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+h2 {
+  font-size: 1.2rem;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.statusOk span {
+  background: var(--green);
+}
+
+.statusDown span {
+  background: var(--coral);
+}
+
+.statusLink {
+  color: var(--green);
+  text-decoration: none;
+}
+
+.statusLink:hover {
+  border-color: var(--green);
+}
+
+.workspace {
+  display: grid;
+  gap: 24px;
+}
+
+.summaryBand {
+  min-height: 108px;
+  padding: 22px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.summaryBand h2 {
+  max-width: 820px;
+  font-size: 2.75rem;
+}
+
+.textLink {
+  color: var(--green);
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.textLink:hover {
+  text-decoration: underline;
+}
+
+.summaryRange {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-align: right;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metricCard,
+.postCard,
+.lookupPanel,
+.participantPanel,
+.emptyState {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.metricCard {
+  min-height: 112px;
+  padding: 18px;
+}
+
+.metricCard dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.metricCard dd {
+  margin-top: 14px;
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 24px;
+  align-items: start;
+}
+
+.feed,
+.sideStack {
+  display: grid;
+  gap: 14px;
+}
+
+.sectionHeader p,
+.lookupHeader p,
+.postMeta {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.postList {
+  display: grid;
+  gap: 10px;
+}
+
+.postCard {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.postCard p {
+  color: #303833;
+  line-height: 1.55;
+}
+
+.postMeta span:first-child {
+  color: var(--coral);
+}
+
+.postRecord {
+  gap: 16px;
+}
+
+.postRecordHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.postRecordHeader h2 {
+  margin-top: 8px;
+}
+
+.postRecordHeader time {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.postBody {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 18px;
+  background: #fff;
+  color: #303833;
+  font-size: 0.98rem;
+  line-height: 1.62;
+  overflow-wrap: anywhere;
+}
+
+.discoursePost > :first-child {
+  margin-top: 0;
+}
+
+.discoursePost > :last-child {
+  margin-bottom: 0;
+}
+
+.discoursePost p {
+  margin: 0 0 1em;
+  color: #303833;
+  line-height: 1.62;
+}
+
+.discoursePost h1,
+.discoursePost h2,
+.discoursePost h3,
+.discoursePost h4 {
+  margin: 1.35em 0 0.55em;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.discoursePost h1 {
+  font-size: 1.7rem;
+}
+
+.discoursePost h2 {
+  font-size: 1.35rem;
+}
+
+.discoursePost h3 {
+  font-size: 1.1rem;
+}
+
+.discoursePost ul,
+.discoursePost ol {
+  margin: 0 0 1em;
+  padding-left: 1.35rem;
+}
+
+.discoursePost li {
+  margin: 0.35em 0;
+}
+
+.discoursePost a {
+  color: var(--green);
+  font-weight: 750;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.discoursePost blockquote,
+.discoursePost aside.quote {
+  margin: 1em 0;
+  border-left: 4px solid var(--gold);
+  border-radius: 0 6px 6px 0;
+  padding: 12px 14px;
+  background: #fbf7ee;
+  color: #39413c;
+}
+
+.discoursePost aside.quote blockquote {
+  margin: 8px 0 0;
+  border-left: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.discoursePost .title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.discoursePost img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+.discoursePost img.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.discoursePost code {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.1em 0.32em;
+  background: #f3efe7;
+  color: #202521;
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.88em;
+}
+
+.discoursePost pre {
+  overflow: auto;
+  border-radius: 6px;
+  padding: 14px;
+  background: #202521;
+  color: #f5f1ea;
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.discoursePost pre code {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.discoursePost table {
+  display: block;
+  width: 100%;
+  overflow: auto;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.discoursePost th,
+.discoursePost td {
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.discoursePost .lightbox-wrapper,
+.discoursePost .meta {
+  max-width: 100%;
+}
+
+.discoursePost .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.discoursePost svg {
+  display: none;
+}
+
+.postStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--line);
+}
+
+.postStats div {
+  min-width: 0;
+  padding: 10px;
+  background: #fff;
+}
+
+.postStats dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.postStats dd {
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.jsonDetails {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.jsonDetails summary {
+  color: var(--green);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.jsonDetails pre {
+  max-height: 480px;
+  margin: 12px 0 0;
+  overflow: auto;
+  border-radius: 6px;
+  padding: 14px;
+  background: #202521;
+  color: #f5f1ea;
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.lookupPanel,
+.participantPanel,
+.emptyState {
+  padding: 18px;
+}
+
+.lookupPanel {
+  display: grid;
+  gap: 16px;
+}
+
+.lookupForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.lookupForm label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.lookupForm input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 12px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.lookupForm input:focus {
+  outline: 3px solid var(--green-soft);
+  border-color: var(--green);
+}
+
+.lookupForm button {
+  align-self: end;
+  min-height: 42px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 14px;
+  background: var(--green);
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.lookupForm button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.lookupResult {
+  display: grid;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.lookupResult strong {
+  font-size: 1rem;
+}
+
+.lookupResult p,
+.emptyState p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.lookupStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lookupStats span {
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: var(--green-soft);
+  color: var(--green);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.errorText {
+  color: var(--coral);
+  font-weight: 800;
+}
+
+.participantList {
+  display: grid;
+  gap: 8px;
+  padding: 14px 0 0;
+  list-style: none;
+}
+
+.participantList li {
+  min-height: 36px;
+  border-bottom: 1px solid var(--line);
+}
+
+.participantList li:last-child {
+  border-bottom: 0;
+}
+
+.participantList span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.participantList strong {
+  color: var(--gold);
+}
+
+.emptyState {
+  display: grid;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .metricsGrid,
+  .contentGrid,
+  .postStats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .feed {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 680px) {
+  .shell {
+    width: min(100% - 20px, 1180px);
+    padding-top: 18px;
+  }
+
+  .topbar,
+  .summaryBand,
+  .sectionHeader,
+  .lookupHeader,
+  .postRecordHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .metricsGrid,
+  .contentGrid,
+  .postStats {
+    grid-template-columns: 1fr;
+  }
+
+  .lookupForm {
+    grid-template-columns: 1fr;
+  }
+
+  .lookupForm button {
+    width: 100%;
+  }
+
+  h1 {
+    font-size: 2.4rem;
+  }
+
+  .summaryBand h2 {
+    font-size: 1.8rem;
+  }
+
+  .metricCard dd {
+    font-size: 2rem;
+  }
+
+  .summaryRange {
+    text-align: left;
+  }
+
+  .postRecordHeader time {
+    white-space: normal;
+  }
+}
