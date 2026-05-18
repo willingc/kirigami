@@ -11,5 +11,8 @@ nav:
   - Use case: usecase.md
   - Systems Thinking: systems_thinking.md
   - Vision: vision.md
-  - Diagrams: diagrams.md
+  - Diagrams:
+    - Color legend: diagrams.md
+    - Overview: diagram-overview.md
+    - Author and flow: diagram-author-flow.md
 

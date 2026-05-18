@@ -1,11 +1,20 @@
 # Vision diagrams
 
-Excalidraw diagrams illustrate [Vision](vision.md). Open them in [Excalidraw](https://excalidraw.com) or Excalidraw+ to edit, export PNG/SVG, or embed in other docs.
+Excalidraw diagrams illustrate [Vision](vision.md). Published PNGs are on dedicated pages; source `.excalidraw` files remain editable in [Excalidraw](https://excalidraw.com) or Excalidraw+.
+
+## Diagram pages
+
+| Page | Purpose |
+|------|---------|
+| [Overview](diagram-overview.md) | End-to-end: problem → source principle → ingest → `ThreadDocument` → derived views (§1–§6) |
+| [Author and flow](diagram-author-flow.md) | Reader experiences: author panel (§5) and conversation flow (§6) |
+
+## Source files
 
 | File | Purpose |
 |------|---------|
-| [kirigami-vision.excalidraw](kirigami-vision.excalidraw) | End-to-end overview: problem → source principle → ingest → `ThreadDocument` → derived views (§1–§6) |
-| [kirigami-vision-author-flow.excalidraw](kirigami-vision-author-flow.excalidraw) | Reader experiences in detail: author panel (§5) and conversation flow (§6) |
+| [kirigami-vision.excalidraw](kirigami-vision.excalidraw) | Editable source for the overview diagram |
+| [kirigami-vision-author-flow.excalidraw](kirigami-vision-author-flow.excalidraw) | Editable source for the author / flow diagram |
 
 ---
 
@@ -118,17 +127,32 @@ Dashed gray arrows: author summary informed by posts below.
 
 ---
 
-## Editing and publishing
+## Regenerating PNGs
 
-1. Clone or open the repo and load `.excalidraw` files from `docs/`.
-2. Edit in Excalidraw+; use **Frames** to group §5 / §6 for cleaner exports.
-3. Export **PNG** or **SVG** (e.g. `docs/images/kirigami-vision.png`) and reference from Markdown if you want figures on this site:
+After editing a `.excalidraw` file, re-export PNGs from the repo root (requires [Node.js](https://nodejs.org/) and network for `npx`):
 
-   ```markdown
-   ![Overview](../images/kirigami-vision.png)
-   ```
+```bash
+npx excalidraw2png convert docs/kirigami-vision.excalidraw \
+  -o docs/images/kirigami-vision-overview.png --scale 2
 
-4. Keep fill/stroke pairs aligned with the legend above so both diagrams stay visually consistent.
+npx excalidraw2png convert docs/kirigami-vision-author-flow.excalidraw \
+  -o docs/images/kirigami-vision-author-flow.png --scale 2
+```
+
+Or run the helper script:
+
+```bash
+./scripts/export-diagrams.sh
+```
+
+Commit both the updated `.excalidraw` and `.png` files when diagram content changes.
+
+## Editing tips
+
+1. Load `.excalidraw` files from `docs/` in Excalidraw+.
+2. Use **Frames** to group §5 / §6 on the author-flow canvas for cleaner exports.
+3. Keep fill/stroke pairs aligned with the legend above so both diagrams stay visually consistent.
+4. Regenerate PNGs and verify [Overview](diagram-overview.md) and [Author and flow](diagram-author-flow.md) in a local MkDocs build (`mkdocs serve`).
 
 ---
 
