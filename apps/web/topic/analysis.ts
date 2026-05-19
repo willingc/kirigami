@@ -118,10 +118,6 @@ export function cookedHtml(post: TopicPost): string {
   return `<pre>${escapeHtml(post.raw)}</pre>`;
 }
 
-export function postUrl(postNumber: number): string {
-  return `https://discuss.python.org/t/102383/${postNumber}`;
-}
-
 function buildSignals(
   posts: TopicPost[],
   textByPost: Map<number, string>,
@@ -305,16 +301,35 @@ function emptySignalCounts<T>(factory: () => T): Record<SignalCategory, T> {
 }
 
 function excerptAround(text: string, term: string): string {
-  const index = text.toLowerCase().indexOf(term.toLowerCase());
-  if (index < 0) {
-    return text.slice(0, 220);
+  const normalizedText = text.replace(/\s+/g, " ").trim();
+  const sentences = normalizedText.match(/[^.!?]+(?:[.!?]+|$)/g)?.map((sentence) => sentence.trim()).filter(Boolean);
+
+  if (!sentences || sentences.length === 0) {
+    return normalizedText;
   }
 
-  const start = Math.max(0, index - 90);
-  const end = Math.min(text.length, index + term.length + 130);
-  const prefix = start > 0 ? "..." : "";
-  const suffix = end < text.length ? "..." : "";
-  return `${prefix}${text.slice(start, end).trim()}${suffix}`;
+  const sentenceIndex = sentences.findIndex((sentence) =>
+    sentence.toLowerCase().includes(term.toLowerCase()),
+  );
+
+  if (sentenceIndex < 0) {
+    return leadingSentences(sentences);
+  }
+
+  const selected = [sentences[sentenceIndex]];
+  if (wordCount(selected.join(" ")) < 24 && sentences[sentenceIndex + 1]) {
+    selected.push(sentences[sentenceIndex + 1]);
+  }
+  if (wordCount(selected.join(" ")) < 24 && sentences[sentenceIndex - 1]) {
+    selected.unshift(sentences[sentenceIndex - 1]);
+  }
+
+  return selected.join(" ");
+}
+
+function leadingSentences(sentences: string[]): string {
+  const selected = sentences.slice(0, 2);
+  return selected.join(" ");
 }
 
 function wordCount(value: string): number {

@@ -10,7 +10,7 @@ function clientApiBaseUrl() {
 }
 
 export default function TopicLookup() {
-  const [topicId, setTopicId] = useState("102383");
+  const [topicId, setTopicId] = useState("");
   const [summary, setSummary] = useState<DiscussionSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);

@@ -388,11 +388,10 @@ def main():
     """
     import sys
     
-    # Allow specifying JSON file as command line argument
-    if len(sys.argv) > 1:
-        json_file = sys.argv[1]
-    else:
-        json_file = "topic_102383_posts.json"  # Default file
+    if len(sys.argv) < 2:
+        print("Usage: discourse_data_summarizer.py <topic_posts.json>")
+        return 2
+    json_file = sys.argv[1]
     
     print(f"Analyzing Discourse topic data from: {json_file}")
     print("-" * 60)

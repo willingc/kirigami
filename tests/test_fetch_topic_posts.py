@@ -192,9 +192,32 @@ class TestCreateDiscourseClient:
     def test_no_auth_headers_without_credentials(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv("DISCOURSE_API_KEY", raising=False)
         monkeypatch.delenv("DISCOURSE_USERNAME", raising=False)
+        monkeypatch.delenv("DISCOURSE_USER_API_KEY", raising=False)
         client = create_discourse_client(load_env=False)
         try:
             assert "Api-Key" not in client.headers
+        finally:
+            client.close()
+
+    def test_adds_user_api_key_header(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("DISCOURSE_API_KEY", "admin-key")
+        monkeypatch.setenv("DISCOURSE_USERNAME", "me")
+        monkeypatch.setenv("DISCOURSE_USER_API_KEY", "user-key")
+        client = create_discourse_client(load_env=False)
+        try:
+            assert client.headers["User-Api-Key"] == "user-key"
+            assert "Api-Key" not in client.headers
+        finally:
+            client.close()
+
+    def test_ignores_placeholder_credentials(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("DISCOURSE_API_KEY", "your_api_key_here")
+        monkeypatch.setenv("DISCOURSE_USERNAME", "your_discourse_username")
+        monkeypatch.delenv("DISCOURSE_USER_API_KEY", raising=False)
+        client = create_discourse_client(load_env=False)
+        try:
+            assert "Api-Key" not in client.headers
+            assert "Api-Username" not in client.headers
         finally:
             client.close()
 

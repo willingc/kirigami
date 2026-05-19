@@ -11,6 +11,7 @@ from typing import Any
 
 import httpx
 
+from .client import _clean_secret, load_dotenv_file
 from .resolve import DISCOURSE_BASE_URL
 
 BATCH_SIZE = 20
@@ -71,15 +72,20 @@ def create_discourse_client(
     when python-dotenv is installed.
     """
     if load_env:
-        _load_dotenv()
+        load_dotenv_file()
 
-    key = api_key if api_key is not None else os.environ.get("DISCOURSE_API_KEY")
-    user = api_username if api_username is not None else os.environ.get("DISCOURSE_USERNAME")
+    key = _clean_secret(api_key if api_key is not None else os.environ.get("DISCOURSE_API_KEY"))
+    user = _clean_secret(
+        api_username if api_username is not None else os.environ.get("DISCOURSE_USERNAME")
+    )
 
     headers: dict[str, str] = {}
     if key and user:
         headers["Api-Key"] = key
         headers["Api-Username"] = user
+    user_key = _clean_secret(os.environ.get("DISCOURSE_USER_API_KEY"))
+    if user_key:
+        headers = {"User-Api-Key": user_key}
 
     return httpx.Client(
         base_url=base_url.rstrip("/"),
@@ -144,15 +150,6 @@ def fetch_topic_posts(
     finally:
         if owns_client:
             client.close()
-
-
-def _load_dotenv() -> None:
-    try:
-        from dotenv import load_dotenv
-    except ImportError:
-        return
-    load_dotenv()
-
 
 def _get_json(
     client: httpx.Client,

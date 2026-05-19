@@ -1,21 +1,29 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import type { TopicMeta, TopicPost } from "@/topic/types";
+import { fetchApi } from "@/lib/api";
+import type { TopicDocument, TopicMeta, TopicPost } from "@/topic/types";
 
-const DATA_FILE = "topic_102383_posts.json";
-
-export const topicMeta: TopicMeta = {
-  topicId: 102383,
-  title: "Wheel Variants discussion",
-  sourceUrl: "https://discuss.python.org/t/102383",
-  dataFile: `data/${DATA_FILE}`,
-};
-
-export async function loadTopicPosts(): Promise<TopicPost[]> {
-  const payload = await readFile(
-    path.join(/* turbopackIgnore: true */ process.cwd(), "..", "..", "data", DATA_FILE),
-    "utf8",
+export async function loadTopicDocument(topicId: string): Promise<TopicDocument> {
+  const result = await fetchApi<TopicDocument>(
+    `/api/topics/${encodeURIComponent(topicId)}/document`,
   );
-  const posts = JSON.parse(payload) as TopicPost[];
-  return posts.sort((left, right) => left.post_number - right.post_number);
+
+  if (!result.ok) {
+    throw new Error(result.error);
+  }
+
+  return {
+    ...result.data,
+    posts: sortPosts(result.data.posts),
+  };
+}
+
+export function topicMetaFromDocument(document: TopicDocument): TopicMeta {
+  return {
+    topicId: document.topic.topic_id,
+    title: document.topic.title,
+    sourceUrl: document.topic.url,
+  };
+}
+
+function sortPosts(posts: TopicPost[]): TopicPost[] {
+  return [...posts].sort((left, right) => left.post_number - right.post_number);
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
-import type { ReactNode } from "react";
-import { analyzeConversation, cookedHtml, postUrl } from "@/topic/analysis";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent, ReactNode, RefObject } from "react";
+import { analyzeConversation, cookedHtml } from "@/topic/analysis";
 import type {
   AuthorSummary,
   ConversationAnalysis,
@@ -25,6 +25,10 @@ const timeFormatter = new Intl.DateTimeFormat("en", {
   hour: "numeric",
   minute: "2-digit",
 });
+const monthFormatter = new Intl.DateTimeFormat("en", {
+  month: "short",
+  year: "numeric",
+});
 
 const categoryLabels: Record<SignalCategory, string> = {
   agreement: "Convergence evidence",
@@ -40,6 +44,20 @@ const categoryNotes: Record<SignalCategory, string> = {
   progress: "Posts that mention proposals, revisions, next steps, or decisions.",
 };
 
+function sourcePostUrl(sourceUrl: string, postNumber: number): string {
+  return `${sourceUrl.replace(/\/$/, "")}/${postNumber}`;
+}
+
+const workbenchTabs = [
+  { id: "summary", label: "Summary" },
+  { id: "path", label: "Read the thread in four passes" },
+  { id: "positions", label: "Evidence for agreement and disagreement" },
+  { id: "voices", label: "Who shaped the discussion" },
+  { id: "source", label: "Sources" },
+] as const;
+
+type WorkbenchTab = (typeof workbenchTabs)[number]["id"];
+
 export default function ConversationWorkbench({
   posts,
   meta,
@@ -47,6 +65,9 @@ export default function ConversationWorkbench({
   posts: TopicPost[];
   meta: TopicMeta;
 }) {
+  const [activeTab, setActiveTab] = useState<WorkbenchTab>("summary");
+  const [activeSourcePost, setActiveSourcePost] = useState<number | null>(null);
+  const sourceListRef = useRef<HTMLDivElement>(null);
   const analysis = useMemo(() => analyzeConversation(posts), [posts]);
   const postsByNumber = useMemo(
     () => new Map(posts.map((post) => [post.post_number, post])),
@@ -54,6 +75,45 @@ export default function ConversationWorkbench({
   );
   const firstPost = posts[0];
   const lastPost = posts.at(-1);
+
+  useEffect(() => {
+    if (activeTab !== "source" || posts.length === 0) {
+      return;
+    }
+
+    const sourceList = sourceListRef.current;
+    if (!sourceList) {
+      return;
+    }
+
+    let frame: number | null = null;
+    const updateFromScroll = () => {
+      frame = null;
+      const maxScroll = Math.max(1, sourceList.scrollHeight - sourceList.clientHeight);
+      const ratio = Math.min(1, Math.max(0, sourceList.scrollTop / maxScroll));
+      const post = posts[Math.round(ratio * (posts.length - 1))];
+      if (post) {
+        setActiveSourcePost(post.post_number);
+      }
+    };
+
+    const handleScroll = () => {
+      if (frame !== null) {
+        return;
+      }
+      frame = requestAnimationFrame(updateFromScroll);
+    };
+
+    updateFromScroll();
+    sourceList.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      sourceList.removeEventListener("scroll", handleScroll);
+      if (frame !== null) {
+        cancelAnimationFrame(frame);
+      }
+    };
+  }, [activeTab, posts]);
 
   return (
     <main className="readerShell">
@@ -79,113 +139,171 @@ export default function ConversationWorkbench({
           </div>
         </header>
 
-        <section className="briefPanel" id="brief">
-          <BriefBlock
-            title="What this discussion is about"
-            body={
-              firstPost
-                ? `The opening post frames the discussion around Wheel Variants and the difficulty of distributing hardware-specific or platform-dependent Python packages.`
-                : "The source data did not include an opening post."
-            }
-            post={firstPost}
-          />
-          <BriefBlock
-            title="Where it seems to converge"
-            body="The strongest convergence evidence is not treated as consensus. It is a shortlist of posts whose wording suggests agreement, support, or acceptance."
-            signals={analysis.signals.agreement.slice(0, 3)}
-            postsByNumber={postsByNumber}
-          />
-          <BriefBlock
-            title="What remains contested"
-            body="The strongest contested evidence is a shortlist of posts that appear to carry concern, objection, risk, or pushback language."
-            signals={analysis.signals.disagreement.slice(0, 3)}
-            postsByNumber={postsByNumber}
-          />
-        </section>
+        <nav className="workbenchTabs" aria-label="Conversation views" role="tablist">
+          {workbenchTabs.map((tab) => (
+            <button
+              aria-controls={`panel-${tab.id}`}
+              aria-selected={activeTab === tab.id}
+              id={`tab-${tab.id}`}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              role="tab"
+              type="button"
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
 
-        <GuidedSection
-          eyebrow="Reading path"
-          id="path"
-          title="Read the thread in four passes"
-          intro="Instead of starting with 225 posts, use the conversation phases as a map. Each phase opens at source level when you need to inspect the underlying messages."
+        <div
+          aria-labelledby={`tab-${activeTab}`}
+          className="tabPanel"
+          id={`panel-${activeTab}`}
+          role="tabpanel"
         >
-          <div className="pathList">
-            {analysis.phases.map((phase) => (
-              <PhaseStep key={phase.id} phase={phase} postsByNumber={postsByNumber} />
-            ))}
-          </div>
-        </GuidedSection>
-
-        <GuidedSection
-          eyebrow="Positions"
-          id="positions"
-          title="Evidence for agreement and disagreement"
-          intro="These sections are intentionally restrained: they point to likely evidence, then let the source post carry the argument."
-        >
-          <div className="evidenceSections">
-            <SignalSection
-              analysis={analysis}
-              category="agreement"
-              postsByNumber={postsByNumber}
-              limit={6}
-            />
-            <SignalSection
-              analysis={analysis}
-              category="disagreement"
-              postsByNumber={postsByNumber}
-              limit={6}
-            />
-            <SignalSection
-              analysis={analysis}
-              category="question"
-              postsByNumber={postsByNumber}
-              limit={5}
-            />
-            <SignalSection
-              analysis={analysis}
-              category="progress"
-              postsByNumber={postsByNumber}
-              limit={5}
-            />
-          </div>
-        </GuidedSection>
-
-        <GuidedSection
-          eyebrow="Voices"
-          id="voices"
-          title="Who shaped the discussion"
-          intro="Author rows stay compact until opened. Each expanded row shows the author's post cadence and the first few source messages."
-        >
-          <div className="voiceList">
-            {analysis.authors.slice(0, 10).map((author) => (
-              <AuthorRow
-                author={author}
-                key={author.username}
-                posts={posts.filter((post) => post.username === author.username)}
+          {activeTab === "summary" ? (
+            <section className="briefPanel" id="brief">
+              <BriefBlock
+                title="What this discussion is about"
+                body={
+                  firstPost
+                    ? `The opening post introduces ${meta.title} and sets up the discussion that follows.`
+                    : "The source data did not include an opening post."
+                }
+                post={firstPost}
+                sourceUrl={meta.sourceUrl}
               />
-            ))}
-          </div>
-        </GuidedSection>
+              <BriefBlock
+                title="Where it seems to converge"
+                body="The strongest convergence evidence is not treated as consensus. It is a shortlist of posts whose wording suggests agreement, support, or acceptance."
+                signals={analysis.signals.agreement.slice(0, 3)}
+                postsByNumber={postsByNumber}
+                sourceUrl={meta.sourceUrl}
+              />
+              <BriefBlock
+                title="What remains contested"
+                body="The strongest contested evidence is a shortlist of posts that appear to carry concern, objection, risk, or pushback language."
+                signals={analysis.signals.disagreement.slice(0, 3)}
+                postsByNumber={postsByNumber}
+                sourceUrl={meta.sourceUrl}
+              />
+            </section>
+          ) : null}
 
-        <GuidedSection
-          eyebrow="Source"
-          id="source"
-          title="Source messages remain available"
-          intro="The full thread is preserved below. Messages are collapsed by default so the page stays readable."
-        >
-          <div className="sourceList">
-            {posts.map((post) => (
-              <SourceMessage key={post.id} post={post} />
-            ))}
-          </div>
-        </GuidedSection>
+          {activeTab === "path" ? (
+            <GuidedSection
+              eyebrow="Reading path"
+              id="path"
+              title="Read the thread in four passes"
+              intro="Instead of starting with 225 posts, use the conversation phases as a map. Each phase opens at source level when you need to inspect the underlying messages."
+            >
+              <div className="pathList">
+                {analysis.phases.map((phase) => (
+                  <PhaseStep
+                    key={phase.id}
+                    phase={phase}
+                    postsByNumber={postsByNumber}
+                    sourceUrl={meta.sourceUrl}
+                  />
+                ))}
+              </div>
+            </GuidedSection>
+          ) : null}
 
-        {lastPost ? (
-          <footer className="readerFooter">
-            Last source post in this JSON: #{lastPost.post_number} by @{lastPost.username} on{" "}
-            {formatTime(lastPost.created_at)}.
-          </footer>
-        ) : null}
+          {activeTab === "positions" ? (
+            <GuidedSection
+              eyebrow="Positions"
+              id="positions"
+              title="Evidence for agreement and disagreement"
+              intro="These sections are intentionally restrained: they point to likely evidence, then let the source post carry the argument."
+            >
+              <div className="evidenceSections">
+                <SignalSection
+                  analysis={analysis}
+                  category="agreement"
+                  postsByNumber={postsByNumber}
+                  sourceUrl={meta.sourceUrl}
+                  limit={6}
+                />
+                <SignalSection
+                  analysis={analysis}
+                  category="disagreement"
+                  postsByNumber={postsByNumber}
+                  sourceUrl={meta.sourceUrl}
+                  limit={6}
+                />
+                <SignalSection
+                  analysis={analysis}
+                  category="question"
+                  postsByNumber={postsByNumber}
+                  sourceUrl={meta.sourceUrl}
+                  limit={5}
+                />
+                <SignalSection
+                  analysis={analysis}
+                  category="progress"
+                  postsByNumber={postsByNumber}
+                  sourceUrl={meta.sourceUrl}
+                  limit={5}
+                />
+              </div>
+            </GuidedSection>
+          ) : null}
+
+          {activeTab === "voices" ? (
+            <GuidedSection
+              eyebrow="Voices"
+              id="voices"
+              title="Who shaped the discussion"
+              intro="Author rows stay compact until opened. Each expanded row shows the author's post cadence and the first few source messages."
+            >
+              <div className="voiceList">
+                {analysis.authors.slice(0, 10).map((author) => (
+                  <AuthorRow
+                    author={author}
+                    key={author.username}
+                    posts={posts.filter((post) => post.username === author.username)}
+                    sourceUrl={meta.sourceUrl}
+                  />
+                ))}
+              </div>
+            </GuidedSection>
+          ) : null}
+
+          {activeTab === "source" ? (
+            <GuidedSection
+              eyebrow="Source"
+              id="source"
+              title="Source messages remain available"
+              intro="The full thread is preserved below with source messages expanded and a timeline for jumping through the discussion."
+            >
+              <div className="sourceWorkspace">
+                <div className="sourceList" id="source-list" ref={sourceListRef}>
+                  {posts.map((post) => (
+                    <SourceMessage
+                      expanded
+                      key={post.id}
+                      post={post}
+                      sourceUrl={meta.sourceUrl}
+                    />
+                  ))}
+                </div>
+                <SourceTimeline
+                  activePostNumber={activeSourcePost}
+                  onActivePostChange={setActiveSourcePost}
+                  posts={posts}
+                  sourceListRef={sourceListRef}
+                />
+              </div>
+              {lastPost ? (
+                <footer className="readerFooter">
+                  Last source post in this JSON: #{lastPost.post_number} by @{lastPost.username} on{" "}
+                  {formatTime(lastPost.created_at)}.
+                </footer>
+              ) : null}
+            </GuidedSection>
+          ) : null}
+        </div>
       </article>
     </main>
   );
@@ -197,12 +315,14 @@ function BriefBlock({
   post,
   signals,
   postsByNumber,
+  sourceUrl,
 }: {
   title: string;
   body: string;
   post?: TopicPost;
   signals?: Signal[];
   postsByNumber?: Map<number, TopicPost>;
+  sourceUrl: string;
 }) {
   return (
     <section className="briefBlock">
@@ -220,6 +340,7 @@ function BriefBlock({
                 <EvidenceDrawer
                   label={`#${signal.postNumber}`}
                   post={sourcePost}
+                  sourceUrl={sourceUrl}
                   signal={signal}
                 />
               </li>
@@ -230,7 +351,7 @@ function BriefBlock({
         <p>{body}</p>
       )}
       {post ? (
-        <EvidenceDrawer label={`#${post.post_number}`} post={post} />
+        <EvidenceDrawer label={`#${post.post_number}`} post={post} sourceUrl={sourceUrl} />
       ) : null}
     </section>
   );
@@ -262,9 +383,11 @@ function GuidedSection({
 function PhaseStep({
   phase,
   postsByNumber,
+  sourceUrl,
 }: {
   phase: Phase;
   postsByNumber: Map<number, TopicPost>;
+  sourceUrl: string;
 }) {
   const openingPost = postsByNumber.get(phase.postStart);
   const closingPost = postsByNumber.get(phase.postEnd);
@@ -285,9 +408,19 @@ function PhaseStep({
           <span>{phase.signalCounts.progress} progress</span>
         </div>
         <div className="citationRow">
-          {openingPost ? <EvidenceDrawer label={`Open #${phase.postStart}`} post={openingPost} /> : null}
+          {openingPost ? (
+            <EvidenceDrawer
+              label={`Open #${phase.postStart}`}
+              post={openingPost}
+              sourceUrl={sourceUrl}
+            />
+          ) : null}
           {closingPost && closingPost.post_number !== openingPost?.post_number ? (
-            <EvidenceDrawer label={`Close #${phase.postEnd}`} post={closingPost} />
+            <EvidenceDrawer
+              label={`Close #${phase.postEnd}`}
+              post={closingPost}
+              sourceUrl={sourceUrl}
+            />
           ) : null}
         </div>
       </div>
@@ -299,11 +432,13 @@ function SignalSection({
   analysis,
   category,
   postsByNumber,
+  sourceUrl,
   limit,
 }: {
   analysis: ConversationAnalysis;
   category: SignalCategory;
   postsByNumber: Map<number, TopicPost>;
+  sourceUrl: string;
   limit: number;
 }) {
   const signals = analysis.signals[category].slice(0, limit);
@@ -328,6 +463,7 @@ function SignalSection({
               <EvidenceDrawer
                 label={`#${signal.postNumber} · @${signal.username}`}
                 post={sourcePost}
+                sourceUrl={sourceUrl}
                 signal={signal}
               />
             </li>
@@ -341,9 +477,11 @@ function SignalSection({
 function AuthorRow({
   author,
   posts,
+  sourceUrl,
 }: {
   author: AuthorSummary;
   posts: TopicPost[];
+  sourceUrl: string;
 }) {
   return (
     <details className="authorRow">
@@ -366,6 +504,7 @@ function AuthorRow({
               key={post.id}
               label={`#${post.post_number}`}
               post={post}
+              sourceUrl={sourceUrl}
             />
           ))}
         </div>
@@ -377,39 +516,204 @@ function AuthorRow({
 function EvidenceDrawer({
   label,
   post,
+  sourceUrl,
   signal,
 }: {
   label: string;
   post: TopicPost;
+  sourceUrl: string;
   signal?: Signal;
 }) {
   return (
     <details className="evidenceDrawer">
       <summary>{label}</summary>
-      <SourcePreview post={post} signal={signal} />
+      <SourcePreview post={post} signal={signal} sourceUrl={sourceUrl} />
     </details>
   );
 }
 
-function SourceMessage({ post }: { post: TopicPost }) {
+function SourceTimeline({
+  posts,
+  activePostNumber,
+  onActivePostChange,
+  sourceListRef,
+}: {
+  posts: TopicPost[];
+  activePostNumber: number | null;
+  onActivePostChange: (postNumber: number) => void;
+  sourceListRef: RefObject<HTMLDivElement | null>;
+}) {
+  const [isDragging, setIsDragging] = useState(false);
+  const lastDraggedPostRef = useRef<number | null>(null);
+  const pendingRatioRef = useRef<number | null>(null);
+  const dragFrameRef = useRef<number | null>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const firstPost = posts[0];
+  const lastPost = posts.at(-1);
+  const activeIndex = Math.max(
+    0,
+    posts.findIndex((post) => post.post_number === activePostNumber),
+  );
+  const activePost = posts[activeIndex] ?? firstPost;
+  const progress = posts.length > 1 ? (activeIndex / (posts.length - 1)) * 100 : 0;
+  const handleTop = Math.min(92, Math.max(0, progress));
+
+  useEffect(() => {
+    return () => {
+      if (dragFrameRef.current !== null) {
+        cancelAnimationFrame(dragFrameRef.current);
+      }
+    };
+  }, []);
+
+  function dragRatio(clientY: number): number | null {
+    const track = trackRef.current;
+    if (!track || posts.length === 0) {
+      return null;
+    }
+
+    const rect = track.getBoundingClientRect();
+    return Math.min(1, Math.max(0, (clientY - rect.top) / rect.height));
+  }
+
+  function applyTimelineRatio(ratio: number) {
+    const postIndex = Math.round(ratio * (posts.length - 1));
+    const post = posts[postIndex];
+    if (!post) {
+      return;
+    }
+
+    if (lastDraggedPostRef.current === post.post_number) {
+      return;
+    }
+
+    lastDraggedPostRef.current = post.post_number;
+    onActivePostChange(post.post_number);
+  }
+
+  function scrollToTimelineRatio(ratio: number) {
+    const sourceList = sourceListRef.current;
+    if (!sourceList) {
+      return;
+    }
+
+    applyTimelineRatio(ratio);
+    const maxScroll = Math.max(0, sourceList.scrollHeight - sourceList.clientHeight);
+    sourceList.scrollTop = maxScroll * ratio;
+  }
+
+  function scheduleTimelineScroll(clientY: number) {
+    const ratio = dragRatio(clientY);
+    if (ratio === null) {
+      return;
+    }
+
+    pendingRatioRef.current = ratio;
+    if (dragFrameRef.current !== null) {
+      return;
+    }
+
+    dragFrameRef.current = requestAnimationFrame(() => {
+      dragFrameRef.current = null;
+      const pendingRatio = pendingRatioRef.current;
+      if (pendingRatio === null) {
+        return;
+      }
+
+      scrollToTimelineRatio(pendingRatio);
+    });
+  }
+
+  function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsDragging(true);
+    scheduleTimelineScroll(event.clientY);
+  }
+
+  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isDragging) {
+      return;
+    }
+    scheduleTimelineScroll(event.clientY);
+  }
+
+  function handlePointerEnd(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    lastDraggedPostRef.current = null;
+    pendingRatioRef.current = null;
+    setIsDragging(false);
+  }
+
   return (
-    <details className="sourceMessage" id={`post-${post.post_number}`}>
+    <aside className="sourceTimeline" aria-label="Source timeline">
+      <div className="timelineCard">
+        <a className="timelineMonth timelineMonthStart" href={firstPost ? `#post-${firstPost.post_number}` : "#source"}>
+          {formatMonth(firstPost?.created_at ?? "")}
+        </a>
+        <div
+          aria-label={`Currently near post ${activeIndex + 1} of ${posts.length}, ${formatMonth(
+            activePost?.created_at ?? "",
+          )}`}
+          className={`timelineTrack${isDragging ? " isDragging" : ""}`}
+          onPointerCancel={handlePointerEnd}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerEnd}
+          ref={trackRef}
+        >
+          <div className="timelineLine" />
+          <button
+            aria-label={`Drag timeline marker. Currently near post ${activeIndex + 1} of ${posts.length}`}
+            className="timelineHandle"
+            style={{ top: `${handleTop}%` }}
+            type="button"
+          >
+            <strong>
+              {numberFormatter.format(activeIndex + 1)} / {numberFormatter.format(posts.length)}
+            </strong>
+            <span>{formatMonth(activePost?.created_at ?? "")}</span>
+          </button>
+        </div>
+        <a className="timelineMonth timelineMonthEnd" href={lastPost ? `#post-${lastPost.post_number}` : "#source"}>
+          {formatMonth(lastPost?.created_at ?? "")}
+        </a>
+      </div>
+    </aside>
+  );
+}
+
+function SourceMessage({
+  post,
+  sourceUrl,
+  expanded = false,
+}: {
+  post: TopicPost;
+  sourceUrl: string;
+  expanded?: boolean;
+}) {
+  return (
+    <details className="sourceMessage" id={`post-${post.post_number}`} open={expanded}>
       <summary>
         <span>#{post.post_number}</span>
         <strong>@{post.username}</strong>
         <em>{formatTime(post.created_at)}</em>
       </summary>
-      <SourcePreview post={post} showRaw />
+      <SourcePreview post={post} showRaw sourceUrl={sourceUrl} />
     </details>
   );
 }
 
 function SourcePreview({
   post,
+  sourceUrl,
   signal,
   showRaw = false,
 }: {
   post: TopicPost;
+  sourceUrl: string;
   signal?: Signal;
   showRaw?: boolean;
 }) {
@@ -422,7 +726,7 @@ function SourcePreview({
           </p>
           <time dateTime={post.created_at}>{formatTime(post.created_at)}</time>
         </div>
-        <a href={postUrl(post.post_number)}>Open source</a>
+        <a href={sourcePostUrl(sourceUrl, post.post_number)}>Open source</a>
       </header>
 
       {signal ? (
@@ -473,4 +777,11 @@ function formatTime(value: string): string {
     return "Unknown";
   }
   return timeFormatter.format(new Date(value));
+}
+
+function formatMonth(value: string): string {
+  if (!value) {
+    return "Unknown";
+  }
+  return monthFormatter.format(new Date(value));
 }

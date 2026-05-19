@@ -248,9 +248,14 @@ def main():
     """
     Main function to demonstrate usage
     """
+    import sys
+
     # Configuration
     DISCOURSE_URL = "https://discuss.python.org"
-    TOPIC_ID = 102383  # WheelNext topic
+    if len(sys.argv) < 2 or not sys.argv[1].isdecimal():
+        print("Usage: discourse_api_fetcher.py <topic_id>")
+        return 2
+    TOPIC_ID = int(sys.argv[1])
     
     # Optional: Add API credentials for authenticated requests
     # API_KEY = "your_api_key_here"

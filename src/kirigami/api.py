@@ -3,27 +3,22 @@
 from __future__ import annotations
 
 import html
-import json
 import os
 import re
 from collections import Counter
 from dataclasses import asdict
 from importlib.metadata import PackageNotFoundError, version
-from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
+from .discourse.client import create_pydiscourse_client, load_discourse_settings
 from .discourse.export import normalize_topic
 from .discourse.fetch import DiscoursePost, fetch_topic_posts
 from .discourse.resolve import resolve_pep_thread
-
-DEFAULT_SAMPLE_TOPIC_ID = 102383
-SAMPLE_TOPIC_TITLE = "Wheel Variants discussion"
-SAMPLE_TOPIC_URL = f"https://discuss.python.org/t/{DEFAULT_SAMPLE_TOPIC_ID}"
-SAMPLE_DATA_PATH = Path(__file__).resolve().parents[2] / "data" / "topic_102383_posts.json"
 
 
 def create_app() -> FastAPI:
@@ -57,20 +52,21 @@ def create_app() -> FastAPI:
             "version": _package_version(),
         }
 
-    @app.get("/api/sample-topic")
-    def sample_topic(
-        limit: int = Query(default=8, ge=1, le=50),
+    @app.get("/api/topics/resolve")
+    def resolve_topic(
+        input: str = Query(min_length=1),  # noqa: A002 - API query parameter name.
     ) -> dict[str, Any]:
-        posts = _load_sample_posts()
-        return _summarize_post_dicts(
-            posts,
-            topic={
-                "topic_id": DEFAULT_SAMPLE_TOPIC_ID,
-                "title": SAMPLE_TOPIC_TITLE,
-                "url": SAMPLE_TOPIC_URL,
-            },
-            limit=limit,
-        )
+        topic_id = _parse_topic_input(input)
+        topic = _fetch_topic_document(topic_id)
+        return {
+            "topic": {
+                "topic_id": topic["topic"]["topic_id"],
+                "title": topic["topic"]["title"],
+                "url": topic["topic"]["url"],
+                "posts_count": topic["topic"]["posts_count"],
+                "last_posted_at": topic["topic"]["last_posted_at"],
+            }
+        }
 
     @app.get("/api/topics/{topic_id}")
     def topic_by_id(
@@ -94,6 +90,10 @@ def create_app() -> FastAPI:
         summary["topic"] = normalized["topic"]
         return summary
 
+    @app.get("/api/topics/{topic_id}/document")
+    def topic_document(topic_id: int) -> dict[str, Any]:
+        return _fetch_topic_document(topic_id)
+
     @app.get("/api/peps/{pep}/topic")
     def topic_by_pep(
         pep: int,
@@ -116,6 +116,84 @@ def create_app() -> FastAPI:
     return app
 
 
+def _parse_topic_input(value: str) -> int:
+    raw = value.strip()
+    if raw.isdecimal():
+        topic_id = int(raw)
+        if topic_id > 0:
+            return topic_id
+        raise HTTPException(status_code=400, detail="Topic ID must be a positive integer.")
+
+    parsed = urlparse(raw)
+    if parsed.scheme not in {"http", "https"} or parsed.netloc != "discuss.python.org":
+        raise HTTPException(
+            status_code=400,
+            detail="Enter a discuss.python.org topic URL or numeric topic ID.",
+        )
+
+    parts = [part for part in parsed.path.split("/") if part]
+    if not parts or parts[0] != "t":
+        raise HTTPException(status_code=400, detail="URL must be a discuss.python.org topic URL.")
+
+    for part in reversed(parts[1:]):
+        if part.isdecimal():
+            topic_id = int(part)
+            if topic_id > 0:
+                return topic_id
+
+    raise HTTPException(status_code=400, detail="Topic URL did not include a topic ID.")
+
+
+def _fetch_topic_document(topic_id: int) -> dict[str, Any]:
+    settings = load_discourse_settings()
+    try:
+        # Build the pydiscourse client from the same credentials when auth is
+        # configured, while the existing fetcher handles full post pagination.
+        if settings.api_key and settings.api_username:
+            create_pydiscourse_client(settings)
+        try:
+            topic = fetch_topic_posts(
+                topic_id,
+                base_url=settings.base_url,
+                batch_delay_s=0,
+                cache_dir=settings.cache_dir,
+            )
+        except httpx.HTTPStatusError as exc:
+            has_auth = bool(settings.user_api_key or (settings.api_key and settings.api_username))
+            if exc.response.status_code != 403 or not has_auth:
+                raise
+            with httpx.Client(base_url=settings.base_url, timeout=30.0) as public_client:
+                topic = fetch_topic_posts(
+                    topic_id,
+                    client=public_client,
+                    batch_delay_s=0,
+                    cache_dir=settings.cache_dir,
+                )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(
+            status_code=exc.response.status_code,
+            detail=f"Discourse returned {exc.response.status_code} for topic {topic_id}.",
+        ) from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    return _reader_document(topic)
+
+
+def _reader_document(topic: Any) -> dict[str, Any]:
+    document = normalize_topic(topic)
+    document["posts"] = [
+        {
+            **post,
+            "cooked": source_post.cooked,
+        }
+        for post, source_post in zip(document["posts"], topic.posts, strict=True)
+    ]
+    return document
+
+
 def _package_version() -> str:
     try:
         return version("kirigami")
@@ -131,57 +209,6 @@ def _cors_origins() -> list[str]:
         "http://localhost:3000,http://127.0.0.1:3000",
     )
     return [origin.strip() for origin in raw.split(",") if origin.strip()]
-
-
-def _load_sample_posts() -> list[dict[str, Any]]:
-    if not SAMPLE_DATA_PATH.exists():
-        raise HTTPException(status_code=404, detail="Sample topic data was not found.")
-
-    payload = json.loads(SAMPLE_DATA_PATH.read_text(encoding="utf-8"))
-    if not isinstance(payload, list):
-        raise HTTPException(status_code=500, detail="Sample topic data is malformed.")
-
-    posts = [post for post in payload if isinstance(post, dict)]
-    if not posts:
-        raise HTTPException(status_code=500, detail="Sample topic data is empty.")
-    return posts
-
-
-def _summarize_post_dicts(
-    posts: list[dict[str, Any]],
-    *,
-    topic: dict[str, Any],
-    limit: int,
-) -> dict[str, Any]:
-    usernames = [str(post.get("username") or "unknown") for post in posts]
-    last_updated = max((str(post.get("updated_at") or "") for post in posts), default="")
-    reply_total = sum(int(post.get("reply_count") or 0) for post in posts)
-    read_total = sum(int(post.get("reads") or 0) for post in posts)
-
-    return {
-        "topic": {
-            **topic,
-            "posts_count": len(posts),
-            "last_posted_at": last_updated,
-        },
-        "metrics": {
-            "posts": len(posts),
-            "participants": len(set(usernames)),
-            "replies": reply_total,
-            "reads": read_total,
-        },
-        "participants": _top_participants(usernames),
-        "posts": [
-            {
-                "id": int(post.get("id") or 0),
-                "post_number": int(post.get("post_number") or 0),
-                "username": str(post.get("username") or "unknown"),
-                "created_at": str(post.get("created_at") or ""),
-                "excerpt": _excerpt(str(post.get("raw") or post.get("cooked") or "")),
-            }
-            for post in posts[:limit]
-        ],
-    }
 
 
 def _summarize_discourse_posts(posts: tuple[DiscoursePost, ...], *, limit: int) -> dict[str, Any]:

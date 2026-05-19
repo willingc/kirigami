@@ -18,7 +18,21 @@ export type TopicMeta = {
   topicId: number;
   title: string;
   sourceUrl: string;
-  dataFile: string;
+};
+
+export type TopicDocument = {
+  schema_version: number;
+  source: string;
+  pep: number | null;
+  topic: {
+    topic_id: number;
+    title: string;
+    slug: string;
+    url: string;
+    posts_count: number;
+    last_posted_at: string;
+  };
+  posts: TopicPost[];
 };
 
 export type SignalCategory = "agreement" | "disagreement" | "question" | "progress";

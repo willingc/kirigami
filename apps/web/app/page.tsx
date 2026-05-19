@@ -1,10 +1,7 @@
-import ConversationWorkbench from "@/components/conversation-workbench";
-import { loadTopicPosts, topicMeta } from "@/topic/data";
+import TopicSearch from "@/components/topic-search";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
-  const posts = await loadTopicPosts();
-
-  return <ConversationWorkbench meta={topicMeta} posts={posts} />;
+export default function Home() {
+  return <TopicSearch />;
 }
