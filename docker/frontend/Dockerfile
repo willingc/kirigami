@@ -2,15 +2,13 @@ FROM node:24-alpine AS deps
 
 WORKDIR /app/apps/web
 
-RUN corepack enable
-COPY apps/web/package.json apps/web/pnpm-lock.yaml* apps/web/pnpm-workspace.yaml* ./
-RUN pnpm --config.fetch-timeout=600000 --config.fetch-retries=5 --config.confirm-modules-purge=false install --frozen-lockfile
+COPY apps/web/package*.json ./
+RUN npm ci
 
 FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-RUN corepack enable
 ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_BASE_URL=""
 ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
@@ -18,7 +16,7 @@ ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY apps/web ./apps/web
 
-RUN pnpm -C apps/web run build
+RUN npm run build --prefix apps/web
 
 FROM node:24-alpine AS runner
 

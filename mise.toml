@@ -6,14 +6,13 @@ KIRIGAMI_API_BASE_URL = "http://127.0.0.1:8000"
 [tools]
 node = "24"
 uv = "latest"
-pnpm = "latest"
 
 [tasks.setup]
-description = "Install Node, uv, pnpm, Python dependencies, and Next.js dependencies."
+description = "Install Node, uv, Python dependencies, and Next.js dependencies."
 run = """
-mise install node uv pnpm
+mise install node uv
 uv sync --python "$KIRIGAMI_PYTHON_VERSION" --extra dev --extra web
-pnpm --config.fetch-timeout=600000 --config.fetch-retries=5 --config.confirm-modules-purge=false -C apps/web install --prefer-offline
+npm install --prefix apps/web
 """
 
 [tasks.dev]
@@ -28,7 +27,7 @@ run = "./scripts/deploy-web.sh"
 description = "Run backend tests and frontend checks."
 run = """
 uv run --python "$KIRIGAMI_PYTHON_VERSION" --extra dev --extra web pytest
-pnpm -C apps/web run lint
-pnpm -C apps/web run typecheck
-pnpm -C apps/web run build
+npm run lint --prefix apps/web
+npm run typecheck --prefix apps/web
+npm run build --prefix apps/web
 """

@@ -26,4 +26,4 @@ API_PID=$!
 cd "$ROOT_DIR/apps/web"
 NEXT_PUBLIC_API_BASE_URL="http://${API_HOST}:${API_PORT}" \
 KIRIGAMI_API_BASE_URL="http://${API_HOST}:${API_PORT}" \
-pnpm run dev --hostname "$WEB_HOST" --port "$WEB_PORT"
+npm run dev -- --hostname "$WEB_HOST" --port "$WEB_PORT"
