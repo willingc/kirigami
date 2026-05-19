@@ -25,6 +25,36 @@ def test_health_endpoint() -> None:
     assert payload["service"] == "kirigami-api"
 
 
+def test_cors_allows_caddy_https_origin() -> None:
+    client = TestClient(app)
+
+    response = client.options(
+        "/api/health",
+        headers={
+            "Origin": "https://localhost:8443",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "https://localhost:8443"
+
+
+def test_cors_allows_caddy_lan_https_origin() -> None:
+    client = TestClient(app)
+
+    response = client.options(
+        "/api/health",
+        headers={
+            "Origin": "https://192.168.1.20:8443",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "https://192.168.1.20:8443"
+
+
 def _topic() -> TopicPosts:
     return TopicPosts(
         topic_id=123,

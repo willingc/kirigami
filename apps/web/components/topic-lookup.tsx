@@ -1,13 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { clientApiBaseUrl } from "@/lib/api";
 import type { DiscussionSummary } from "@/lib/types";
-
-const DEFAULT_API_BASE_URL = "http://localhost:8000";
-
-function clientApiBaseUrl() {
-  return (process.env.NEXT_PUBLIC_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/$/, "");
-}
 
 export default function TopicLookup() {
   const [topicId, setTopicId] = useState("");

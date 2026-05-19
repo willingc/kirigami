@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kirigami Workbench",
-  description: "A Next.js frontend for the Kirigami Python backend.",
+  title: "Kirigami",
+  description: "A guided reader for long discuss.python.org threads.",
 };
 
 export default function RootLayout({

@@ -1,0 +1,11 @@
+{$KIRIGAMI_CADDY_ADDR::8443} {
+	bind 0.0.0.0
+	tls internal
+	encode zstd gzip
+
+	handle /api/* {
+		reverse_proxy {$KIRIGAMI_API_UPSTREAM:127.0.0.1:8000}
+	}
+
+	reverse_proxy {$KIRIGAMI_WEB_UPSTREAM:127.0.0.1:3000}
+}

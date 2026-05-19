@@ -118,6 +118,29 @@ export function cookedHtml(post: TopicPost): string {
   return `<pre>${escapeHtml(post.raw)}</pre>`;
 }
 
+export function postUrl(sourceUrl: string, postNumber: number): string;
+export function postUrl(postNumber: number): string;
+export function postUrl(sourceUrlOrPostNumber: string | number, postNumber?: number): string {
+  if (typeof sourceUrlOrPostNumber === "string" && typeof postNumber === "number") {
+    return `${sourceUrlOrPostNumber.replace(/\/$/, "")}/${postNumber}`;
+  }
+
+  const resolvedPostNumber =
+    typeof sourceUrlOrPostNumber === "number" ? sourceUrlOrPostNumber : postNumber;
+  if (!resolvedPostNumber) {
+    return "#source";
+  }
+
+  if (typeof window !== "undefined") {
+    const topicMatch = window.location.pathname.match(/\/topics\/(\d+)/);
+    if (topicMatch?.[1]) {
+      return `https://discuss.python.org/t/${topicMatch[1]}/${resolvedPostNumber}`;
+    }
+  }
+
+  return `#post-${resolvedPostNumber}`;
+}
+
 function buildSignals(
   posts: TopicPost[],
   textByPost: Map<number, string>,

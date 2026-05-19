@@ -2,8 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-
-const DEFAULT_API_BASE_URL = "http://localhost:8000";
+import { clientApiBaseUrl } from "@/lib/api";
 
 type ResolvedTopic = {
   topic: {
@@ -14,10 +13,6 @@ type ResolvedTopic = {
     last_posted_at: string;
   };
 };
-
-function clientApiBaseUrl() {
-  return (process.env.NEXT_PUBLIC_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/$/, "");
-}
 
 export default function TopicSearch() {
   const router = useRouter();
@@ -65,11 +60,34 @@ export default function TopicSearch() {
     <main className="homeShell">
       <section className="homeHero">
         <p className="eyebrow">Kirigami live reader</p>
-        <h1>Read a Discourse thread without starting from the top.</h1>
+        <h1>Understand long Discourse threads without losing the discussion.</h1>
         <p>
-          Paste a discuss.python.org topic URL or enter a topic ID. Kirigami fetches the
-          thread through the backend API and opens the guided reader.
+          Kirigami turns a discuss.python.org topic into a guided reading workspace:
+          summary, evidence, participant signals, and the original source posts stay connected.
         </p>
+        <div className="homeExplainer" aria-label="Project overview">
+          <section>
+            <h2>What it does</h2>
+            <p>
+              It fetches a live thread, groups the conversation into readable views, and keeps
+              every claim tied back to source posts.
+            </p>
+          </section>
+          <section>
+            <h2>Why it exists</h2>
+            <p>
+              Standards discussions are dense. This helps you see where people align, where
+              objections remain, and who shaped the exchange.
+            </p>
+          </section>
+          <section>
+            <h2>How to start</h2>
+            <p>
+              Enter a DPO topic URL or numeric topic ID. The backend collects the posts and opens
+              the reader for that exact thread.
+            </p>
+          </section>
+        </div>
         <form className="topicSearchForm" onSubmit={handleSubmit}>
           <label htmlFor="topic-input">
             Topic URL or ID

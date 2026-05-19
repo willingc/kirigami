@@ -14,6 +14,10 @@ npm install --prefix apps/web
 description = "Launch the FastAPI backend and Next.js development server."
 run = "./scripts/dev-web.sh"
 
+[tasks.deploy]
+description = "Build and launch Caddy, the FastAPI backend, and the Next.js production server."
+run = "./scripts/deploy-web.sh"
+
 [tasks.test]
 description = "Run backend tests and frontend checks."
 run = """

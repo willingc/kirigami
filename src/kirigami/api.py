@@ -31,6 +31,7 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=_cors_origins(),
+        allow_origin_regex=_cors_origin_regex(),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -206,9 +207,23 @@ def _package_version() -> str:
 def _cors_origins() -> list[str]:
     raw = os.environ.get(
         "KIRIGAMI_CORS_ORIGINS",
-        "http://localhost:3000,http://127.0.0.1:3000",
+        ",".join(
+            [
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+                "https://localhost:8443",
+                "https://127.0.0.1:8443",
+            ]
+        ),
     )
     return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+
+def _cors_origin_regex() -> str | None:
+    return os.environ.get(
+        "KIRIGAMI_CORS_ORIGIN_REGEX",
+        r"https://(localhost|127\.0\.0\.1|0\.0\.0\.0|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+|192\.168\.\d+\.\d+):8443",
+    )
 
 
 def _summarize_discourse_posts(posts: tuple[DiscoursePost, ...], *, limit: int) -> dict[str, Any]:
