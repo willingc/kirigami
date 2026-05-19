@@ -5,8 +5,10 @@ from __future__ import annotations
 import html
 import os
 import re
+import time
 from collections import Counter
 from dataclasses import asdict
+from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 from urllib.parse import urlparse
@@ -15,10 +17,18 @@ import httpx
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from .discourse.client import create_pydiscourse_client, load_discourse_settings
+from .discourse.client import (
+    DiscourseSettings,
+    create_httpx_discourse_client,
+    create_pydiscourse_client,
+    load_discourse_settings,
+)
 from .discourse.export import normalize_topic
 from .discourse.fetch import DiscoursePost, fetch_topic_posts
 from .discourse.resolve import resolve_pep_thread
+
+TOPIC_LIST_CACHE_TTL_SECONDS = 300
+_topic_list_cache: dict[str, dict[str, Any]] = {}
 
 
 def create_app() -> FastAPI:
@@ -69,6 +79,14 @@ def create_app() -> FastAPI:
             }
         }
 
+    @app.get("/api/topics/recent")
+    def recent_topics(limit: int = Query(default=20, ge=1, le=50)) -> dict[str, Any]:
+        return _cached_topic_list("recent", limit=limit)
+
+    @app.get("/api/topics/new")
+    def new_topics(limit: int = Query(default=20, ge=1, le=50)) -> dict[str, Any]:
+        return _cached_topic_list("new", limit=limit)
+
     @app.get("/api/topics/{topic_id}")
     def topic_by_id(
         topic_id: int,
@@ -115,6 +133,98 @@ def create_app() -> FastAPI:
         return result
 
     return app
+
+
+def _cached_topic_list(kind: str, *, limit: int) -> dict[str, Any]:
+    settings = load_discourse_settings()
+    cache_key = f"{settings.base_url}:{kind}:{limit}"
+    now = time.monotonic()
+    cached = _topic_list_cache.get(cache_key)
+    if cached and now - float(cached["cached_monotonic"]) < TOPIC_LIST_CACHE_TTL_SECONDS:
+        payload = dict(cached["payload"])
+        payload["cached"] = True
+        return payload
+
+    try:
+        payload = _fetch_topic_list(kind, limit=limit, settings=settings)
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(
+            status_code=exc.response.status_code,
+            detail=f"Discourse returned {exc.response.status_code} for {kind} topics.",
+        ) from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    cached_at = _utc_now()
+    payload["cached"] = False
+    payload["cached_at"] = cached_at
+    payload["expires_at"] = _utc_from_timestamp(time.time() + TOPIC_LIST_CACHE_TTL_SECONDS)
+    _topic_list_cache[cache_key] = {
+        "cached_monotonic": now,
+        "payload": dict(payload),
+    }
+    return payload
+
+
+def _fetch_topic_list(
+    kind: str,
+    *,
+    limit: int,
+    settings: DiscourseSettings,
+) -> dict[str, Any]:
+    path = "/latest.json" if kind == "recent" else "/new.json"
+    with create_httpx_discourse_client(settings) as client:
+        response = client.get(path, params={"per_page": limit})
+        response.raise_for_status()
+        payload = response.json()
+
+    topics = payload.get("topic_list", {}).get("topics", [])
+    return {
+        "kind": kind,
+        "limit": limit,
+        "topics": [
+            _normalize_topic_list_item(topic, base_url=settings.base_url)
+            for topic in topics[:limit]
+            if isinstance(topic, dict)
+        ],
+    }
+
+
+def _normalize_topic_list_item(topic: dict[str, Any], *, base_url: str) -> dict[str, Any]:
+    topic_id = _int_value(topic.get("id"))
+    slug = str(topic.get("slug") or topic_id)
+    excerpt = str(topic.get("excerpt") or "")
+    title = str(topic.get("title") or topic.get("fancy_title") or f"Topic {topic_id}")
+    return {
+        "topic_id": topic_id,
+        "title": html.unescape(title),
+        "slug": slug,
+        "url": f"{base_url}/t/{slug}/{topic_id}",
+        "posts_count": _int_value(topic.get("posts_count")),
+        "reply_count": _int_value(topic.get("reply_count")),
+        "views": _int_value(topic.get("views")),
+        "like_count": _int_value(topic.get("like_count")),
+        "created_at": topic.get("created_at"),
+        "last_posted_at": topic.get("last_posted_at"),
+        "bumped_at": topic.get("bumped_at"),
+        "last_poster_username": topic.get("last_poster_username"),
+        "excerpt": _excerpt(excerpt, limit=180) if excerpt else "",
+    }
+
+
+def _int_value(value: Any) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _utc_from_timestamp(value: float) -> str:
+    return datetime.fromtimestamp(value, timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def _parse_topic_input(value: str) -> int:

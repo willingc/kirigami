@@ -121,6 +121,112 @@ def test_topic_resolve_rejects_non_dpo_url() -> None:
     assert response.status_code == 400
 
 
+def test_recent_topics_are_cached(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls = {"n": 0}
+
+    class FakeDiscourseClient:
+        def __enter__(self) -> "FakeDiscourseClient":
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            return None
+
+        def get(self, path: str, *, params: dict[str, int]) -> httpx.Response:
+            calls["n"] += 1
+            assert path == "/latest.json"
+            assert params["per_page"] == 2
+            request = httpx.Request("GET", "https://discuss.python.org/latest.json")
+            return httpx.Response(
+                200,
+                json={
+                    "topic_list": {
+                        "topics": [
+                            {
+                                "id": 123,
+                                "title": "Recent topic",
+                                "slug": "recent-topic",
+                                "posts_count": 4,
+                                "reply_count": 3,
+                                "views": 42,
+                                "like_count": 7,
+                                "created_at": "2024-01-01T12:00:00.000Z",
+                                "last_posted_at": "2024-01-02T12:00:00.000Z",
+                                "bumped_at": "2024-01-02T12:00:00.000Z",
+                                "last_poster_username": "alice",
+                            }
+                        ]
+                    }
+                },
+                request=request,
+            )
+
+    monkeypatch.setattr(
+        api_module,
+        "create_httpx_discourse_client",
+        lambda _settings: FakeDiscourseClient(),
+    )
+    api_module._topic_list_cache.clear()
+    client = TestClient(app)
+
+    first_response = client.get("/api/topics/recent?limit=2")
+    second_response = client.get("/api/topics/recent?limit=2")
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+    assert calls["n"] == 1
+    first_payload = first_response.json()
+    second_payload = second_response.json()
+    assert first_payload["cached"] is False
+    assert second_payload["cached"] is True
+    assert first_payload["topics"][0]["topic_id"] == 123
+    assert first_payload["topics"][0]["url"] == "https://discuss.python.org/t/recent-topic/123"
+
+
+def test_new_topics_use_new_discourse_feed(monkeypatch: pytest.MonkeyPatch) -> None:
+    class FakeDiscourseClient:
+        def __enter__(self) -> "FakeDiscourseClient":
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            return None
+
+        def get(self, path: str, *, params: dict[str, int]) -> httpx.Response:
+            assert path == "/new.json"
+            assert params["per_page"] == 20
+            request = httpx.Request("GET", "https://discuss.python.org/new.json")
+            return httpx.Response(
+                200,
+                json={
+                    "topic_list": {
+                        "topics": [
+                            {
+                                "id": 456,
+                                "title": "New topic",
+                                "slug": "new-topic",
+                            }
+                        ]
+                    }
+                },
+                request=request,
+            )
+
+    monkeypatch.setattr(
+        api_module,
+        "create_httpx_discourse_client",
+        lambda _settings: FakeDiscourseClient(),
+    )
+    api_module._topic_list_cache.clear()
+    client = TestClient(app)
+
+    response = client.get("/api/topics/new")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["kind"] == "new"
+    assert payload["limit"] == 20
+    assert payload["topics"][0]["topic_id"] == 456
+
+
 def test_topic_document_includes_cooked_html(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_fetch_topic_posts(topic_id: int, **_kwargs: object) -> TopicPosts:
         assert topic_id == 123

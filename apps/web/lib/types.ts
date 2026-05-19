@@ -44,3 +44,28 @@ export type DiscussionSummary = {
   participants: Participant[];
   posts: DiscussionPost[];
 };
+
+export type TopicListItem = {
+  topic_id: number;
+  title: string;
+  slug: string;
+  url: string;
+  posts_count: number;
+  reply_count: number;
+  views: number;
+  like_count: number;
+  created_at: string | null;
+  last_posted_at: string | null;
+  bumped_at: string | null;
+  last_poster_username: string | null;
+  excerpt: string;
+};
+
+export type TopicListResponse = {
+  kind: "recent" | "new";
+  limit: number;
+  cached: boolean;
+  cached_at: string;
+  expires_at: string;
+  topics: TopicListItem[];
+};
