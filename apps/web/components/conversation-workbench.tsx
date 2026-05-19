@@ -50,7 +50,7 @@ function sourcePostUrl(sourceUrl: string, postNumber: number): string {
 
 const workbenchTabs = [
   { id: "summary", label: "Summary" },
-  { id: "path", label: "Read the thread in four passes" },
+  { id: "path", label: "Reading path" },
   { id: "positions", label: "Evidence for agreement and disagreement" },
   { id: "voices", label: "Who shaped the discussion" },
   { id: "source", label: "Sources" },
@@ -194,8 +194,10 @@ export default function ConversationWorkbench({
             <GuidedSection
               eyebrow="Reading path"
               id="path"
-              title="Read the thread in four passes"
-              intro="Instead of starting with 225 posts, use the conversation phases as a map. Each phase opens at source level when you need to inspect the underlying messages."
+              title={`Read the thread in ${analysis.phases.length} ${
+                analysis.phases.length === 1 ? "phase" : "phases"
+              }`}
+              intro="Phase boundaries are estimated from the thread's posting rhythm and source activity."
             >
               <div className="pathList">
                 {analysis.phases.map((phase) => (
