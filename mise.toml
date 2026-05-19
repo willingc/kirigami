@@ -13,7 +13,7 @@ description = "Install Node, uv, pnpm, Python dependencies, and Next.js dependen
 run = """
 mise install node uv pnpm
 uv sync --python "$KIRIGAMI_PYTHON_VERSION" --extra dev --extra web
-pnpm -C apps/web install
+pnpm --config.fetch-timeout=600000 --config.fetch-retries=5 --config.confirm-modules-purge=false -C apps/web install --prefer-offline
 """
 
 [tasks.dev]

@@ -3,8 +3,8 @@ FROM node:24-alpine AS deps
 WORKDIR /app/apps/web
 
 RUN corepack enable
-COPY apps/web/package.json apps/web/pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile
+COPY apps/web/package.json apps/web/pnpm-lock.yaml* apps/web/pnpm-workspace.yaml* ./
+RUN pnpm --config.fetch-timeout=600000 --config.fetch-retries=5 --config.confirm-modules-purge=false install --frozen-lockfile
 
 FROM node:24-alpine AS builder
 
