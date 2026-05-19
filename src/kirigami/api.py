@@ -211,8 +211,8 @@ def _cors_origins() -> list[str]:
             [
                 "http://localhost:3000",
                 "http://127.0.0.1:3000",
-                "https://localhost:8443",
-                "https://127.0.0.1:8443",
+                "https://localhost",
+                "https://127.0.0.1",
             ]
         ),
     )
@@ -222,7 +222,7 @@ def _cors_origins() -> list[str]:
 def _cors_origin_regex() -> str | None:
     return os.environ.get(
         "KIRIGAMI_CORS_ORIGIN_REGEX",
-        r"https://(localhost|127\.0\.0\.1|0\.0\.0\.0|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+|192\.168\.\d+\.\d+):8443",
+        r"https://(localhost|127\.0\.0\.1|0\.0\.0\.0|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+|192\.168\.\d+\.\d+)",
     )
 
 

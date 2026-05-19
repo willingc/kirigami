@@ -29,7 +29,7 @@ Run both services together:
 mise run dev
 ```
 
-Run the production-style stack behind Caddy:
+Run the production-style Docker Compose stack behind Caddy:
 
 ```bash
 mise run deploy
@@ -46,17 +46,27 @@ Default URLs:
 - Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:8000`
 - Backend docs: `http://localhost:8000/docs`
-- Caddy deploy proxy: `https://0.0.0.0:8443`
+- Caddy deploy proxy: `https://0.0.0.0`
 
 In development, `NEXT_PUBLIC_API_BASE_URL` points browser requests directly at
 the backend. In deploy mode, browser requests use same-origin `/api/...` through
 Caddy, while `KIRIGAMI_API_BASE_URL` keeps Next.js server-side requests on the
 internal backend URL.
 
-`mise run deploy` requires `caddy` on your `PATH`. Caddy listens on all
-interfaces with `tls internal`, so browsers will see a local self-signed
-certificate unless the Caddy local CA is trusted. Override `KIRIGAMI_CADDY_ADDR`,
-`KIRIGAMI_API_HOST`, `KIRIGAMI_API_PORT`, `KIRIGAMI_WEB_HOST`, or
-`KIRIGAMI_WEB_PORT` to change the bind addresses. The backend CORS defaults allow
-local development origins plus HTTPS Caddy origins on port `8443`; use
+`mise run deploy` runs `docker compose up -d --build` and builds three images:
+FastAPI backend, Next.js frontend, and Caddy. Caddy listens on all interfaces on
+port `443` with `tls internal`, so browsers will see a local self-signed
+certificate unless the Caddy local CA is trusted. Override `KIRIGAMI_CADDY_ADDR`
+to change the Caddy bind address. The backend CORS defaults allow local
+development origins plus HTTPS Caddy origins on port `443`; use
 `KIRIGAMI_CORS_ORIGINS` or `KIRIGAMI_CORS_ORIGIN_REGEX` for other public hosts.
+
+Docker Compose loads `.env` into all three services. For the Caddy deployment,
+leave `NEXT_PUBLIC_API_BASE_URL` empty so browser requests use same-origin
+`/api/...` through Caddy; set `KIRIGAMI_API_BASE_URL=http://backend:8000` for
+server-side Next.js requests.
+
+The deploy wrapper starts a Nix-provided Docker daemon when one is not already
+available at `DOCKER_HOST`. Its default storage path is
+`KIRIGAMI_DOCKER_DATA_ROOT=/opt/kirigami-docker`; point that variable at a
+mounted volume when the root disk is small.

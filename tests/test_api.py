@@ -31,13 +31,13 @@ def test_cors_allows_caddy_https_origin() -> None:
     response = client.options(
         "/api/health",
         headers={
-            "Origin": "https://localhost:8443",
+            "Origin": "https://localhost",
             "Access-Control-Request-Method": "GET",
         },
     )
 
     assert response.status_code == 200
-    assert response.headers["access-control-allow-origin"] == "https://localhost:8443"
+    assert response.headers["access-control-allow-origin"] == "https://localhost"
 
 
 def test_cors_allows_caddy_lan_https_origin() -> None:
@@ -46,13 +46,13 @@ def test_cors_allows_caddy_lan_https_origin() -> None:
     response = client.options(
         "/api/health",
         headers={
-            "Origin": "https://192.168.1.20:8443",
+            "Origin": "https://192.168.1.20",
             "Access-Control-Request-Method": "GET",
         },
     )
 
     assert response.status_code == 200
-    assert response.headers["access-control-allow-origin"] == "https://192.168.1.20:8443"
+    assert response.headers["access-control-allow-origin"] == "https://192.168.1.20"
 
 
 def _topic() -> TopicPosts:

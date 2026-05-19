@@ -1,0 +1,14 @@
+.cache/
+.git/
+.mypy_cache/
+.next/
+.pytest_cache/
+.venv/
+__pycache__/
+*.py[cod]
+apps/web/.next/
+apps/web/node_modules/
+node_modules/
+npm-debug.log*
+coverage.xml
+htmlcov/

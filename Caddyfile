@@ -1,4 +1,4 @@
-{$KIRIGAMI_CADDY_ADDR::8443} {
+{$KIRIGAMI_CADDY_ADDR::443} {
 	bind 0.0.0.0
 	tls internal
 	encode zstd gzip

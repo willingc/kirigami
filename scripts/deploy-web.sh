@@ -2,73 +2,59 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-API_HOST="${KIRIGAMI_API_HOST:-127.0.0.1}"
-API_PORT="${KIRIGAMI_API_PORT:-8000}"
-WEB_HOST="${KIRIGAMI_WEB_HOST:-127.0.0.1}"
-WEB_PORT="${KIRIGAMI_WEB_PORT:-3000}"
-CADDY_ADDR="${KIRIGAMI_CADDY_ADDR:-:8443}"
-PYTHON_VERSION="${KIRIGAMI_PYTHON_VERSION:-3.13}"
-if [[ "$CADDY_ADDR" == :* ]]; then
-  CADDY_DISPLAY_ADDR="0.0.0.0${CADDY_ADDR}"
-else
-  CADDY_DISPLAY_ADDR="$CADDY_ADDR"
-fi
+DOCKERD_LOG="${KIRIGAMI_DOCKERD_LOG:-/tmp/kirigami-dockerd.log}"
+DOCKER_DATA_ROOT="${KIRIGAMI_DOCKER_DATA_ROOT:-/opt/kirigami-docker}"
+DOCKER_EXEC_ROOT="${KIRIGAMI_DOCKER_EXEC_ROOT:-/run/kirigami-docker-exec}"
+DOCKER_HOST="${DOCKER_HOST:-unix:///run/kirigami-docker.sock}"
+DOCKER_SOCKET="${DOCKER_HOST#unix://}"
 
-cleanup() {
-  if [[ -n "${CADDY_PID:-}" ]]; then
-    kill "$CADDY_PID" >/dev/null 2>&1 || true
-  fi
-  if [[ -n "${WEB_PID:-}" ]]; then
-    kill "$WEB_PID" >/dev/null 2>&1 || true
-  fi
-  if [[ -n "${API_PID:-}" ]]; then
-    kill "$API_PID" >/dev/null 2>&1 || true
-  fi
-}
-trap cleanup EXIT INT TERM
-
-if ! command -v caddy >/dev/null 2>&1; then
-  echo "caddy is required for mise run deploy. Install it first, then rerun this task." >&2
-  exit 127
-fi
+export DOCKER_HOST
 
 cd "$ROOT_DIR"
 
-uv run --python "$PYTHON_VERSION" --extra web uvicorn kirigami.api:app \
-  --app-dir src \
-  --host "$API_HOST" \
-  --port "$API_PORT" &
-API_PID=$!
-
-NEXT_PUBLIC_API_BASE_URL="" npm run build --prefix apps/web
-
-NEXT_PUBLIC_API_BASE_URL="" \
-KIRIGAMI_API_BASE_URL="http://${API_HOST}:${API_PORT}" \
-npm run start --prefix apps/web -- --hostname "$WEB_HOST" --port "$WEB_PORT" &
-WEB_PID=$!
-
-KIRIGAMI_CADDY_ADDR="$CADDY_ADDR" \
-KIRIGAMI_API_UPSTREAM="${API_HOST}:${API_PORT}" \
-KIRIGAMI_WEB_UPSTREAM="${WEB_HOST}:${WEB_PORT}" \
-caddy run --config "$ROOT_DIR/Caddyfile" --adapter caddyfile &
-CADDY_PID=$!
-
-echo "Kirigami deploy is running at https://${CADDY_DISPLAY_ADDR}"
-echo "Backend:  http://${API_HOST}:${API_PORT}"
-echo "Frontend: http://${WEB_HOST}:${WEB_PORT}"
-
-while true; do
-  if ! kill -0 "$API_PID" >/dev/null 2>&1; then
-    wait "$API_PID"
-    exit $?
+if ! docker info >/dev/null 2>&1; then
+  if ! command -v dockerd >/dev/null 2>&1; then
+    echo "Docker daemon is not running and dockerd is not on PATH." >&2
+    echo "Enter the Nix shell first: nix develop" >&2
+    exit 127
   fi
-  if ! kill -0 "$WEB_PID" >/dev/null 2>&1; then
-    wait "$WEB_PID"
-    exit $?
+
+  if [[ -f /tmp/kirigami-dockerd-launch.pid ]]; then
+    kill "$(cat /tmp/kirigami-dockerd-launch.pid)" >/dev/null 2>&1 || true
   fi
-  if ! kill -0 "$CADDY_PID" >/dev/null 2>&1; then
-    wait "$CADDY_PID"
-    exit $?
-  fi
-  sleep 1
-done
+
+  mkdir -p "$DOCKER_DATA_ROOT" "$DOCKER_EXEC_ROOT" "$(dirname "$DOCKER_SOCKET")" "$(dirname "$DOCKERD_LOG")"
+  rm -f "$DOCKER_SOCKET" /tmp/kirigami-dockerd.pid /tmp/kirigami-dockerd-launch.pid
+
+  mkdir -p "$(dirname "$DOCKERD_LOG")"
+  nohup dockerd \
+    --host "$DOCKER_HOST" \
+    --data-root "$DOCKER_DATA_ROOT" \
+    --exec-root "$DOCKER_EXEC_ROOT" \
+    --pidfile /tmp/kirigami-dockerd.pid \
+    ${KIRIGAMI_DOCKERD_ARGS:-} \
+    >"$DOCKERD_LOG" 2>&1 &
+  echo $! > /tmp/kirigami-dockerd-launch.pid
+
+  for _ in $(seq 1 60); do
+    if docker info >/dev/null 2>&1; then
+      break
+    fi
+    sleep 1
+  done
+fi
+
+if ! docker info >/dev/null 2>&1; then
+  echo "Docker daemon did not become ready. Log: $DOCKERD_LOG" >&2
+  exit 1
+fi
+
+echo "Docker host: $DOCKER_HOST"
+echo "Docker data root: $DOCKER_DATA_ROOT"
+
+export COMPOSE_PARALLEL_LIMIT="${COMPOSE_PARALLEL_LIMIT:-1}"
+
+docker compose build backend
+docker compose build frontend
+docker compose build caddy
+docker compose up -d --build
