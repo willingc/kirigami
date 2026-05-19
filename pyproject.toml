@@ -41,7 +41,7 @@ dev = [
   "pytest>=8.0",
 ]
 web = [
-  "fastapi[standard]",
+  "fastapi[standard]>=0.136",
   "uvicorn[standard]>=0.34",
 ]
 
