@@ -12,7 +12,7 @@ services:
       DISCOURSE_USERNAME: ${DISCOURSE_USERNAME:-}
       DISCOURSE_API_KEY: ${DISCOURSE_API_KEY:-}
       DISCOURSE_USER_API_KEY: ${DISCOURSE_USER_API_KEY:-}
-      KIRIGAMI_DISCOURSE_CACHE_DIR: ${KIRIGAMI_DISCOURSE_CACHE_DIR:-/var/cache/kirigami/discourse}
+      KIRIGAMI_DISCOURSE_CACHE_DIR: /var/cache/kirigami/discourse
       KIRIGAMI_CORS_ORIGINS: ${KIRIGAMI_CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,https://localhost,https://127.0.0.1}
       KIRIGAMI_CORS_ORIGIN_REGEX: ${KIRIGAMI_CORS_ORIGIN_REGEX:-https://(localhost|127\.0\.0\.1|0\.0\.0\.0|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+|192\.168\.\d+\.\d+)}
     volumes:
@@ -40,8 +40,6 @@ services:
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
     image: kirigami-frontend:latest
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
       KIRIGAMI_API_BASE_URL: ${KIRIGAMI_API_BASE_URL:-http://backend:8000}
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
@@ -57,8 +55,6 @@ services:
       dockerfile: docker/caddy/Dockerfile
     image: kirigami-caddy:latest
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
       KIRIGAMI_CADDY_ADDR: ${KIRIGAMI_CADDY_ADDR:-:443}
       KIRIGAMI_API_UPSTREAM: ${KIRIGAMI_API_UPSTREAM:-backend:8000}
