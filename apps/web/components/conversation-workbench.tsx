@@ -109,6 +109,7 @@ const postContextBorder: Record<SignalCategory, string> = {
   question: "border-l-kiri-note",
   progress: "border-l-kiri-progress",
 };
+const SOURCE_SCROLL_OFFSET = 104;
 
 export default function ConversationWorkbench({
   posts,
@@ -120,6 +121,8 @@ export default function ConversationWorkbench({
   const [activeTab, setActiveTab] = useState<WorkbenchTab>("summary");
   const [activeSourcePost, setActiveSourcePost] = useState<number | null>(null);
   const sourceListRef = useRef<HTMLDivElement>(null);
+  const sourceRegionRef = useRef<HTMLDivElement>(null);
+  const isTimelineDraggingRef = useRef(false);
   const analysis = useMemo(() => analyzeConversation(posts), [posts]);
   const postsByNumber = useMemo(
     () => new Map(posts.map((post) => [post.post_number, post])),
@@ -128,24 +131,75 @@ export default function ConversationWorkbench({
   const signalsByPost = useMemo(() => signalsGroupedByPost(analysis), [analysis]);
   const firstPost = posts[0];
 
-  useEffect(() => {
-    if (activeTab !== "source" || posts.length === 0) {
+  function scrollSourcePostIntoView(postNumber: number) {
+    const target = document.getElementById(`post-${postNumber}`);
+    if (!target) {
       return;
     }
 
-    const sourceList = sourceListRef.current;
-    if (!sourceList) {
+    window.scrollTo({
+      top: Math.max(
+        0,
+        window.scrollY + target.getBoundingClientRect().top - SOURCE_SCROLL_OFFSET,
+      ),
+      behavior: "auto",
+    });
+  }
+
+  function handleSourcePostRequest(postNumber: number) {
+    setActiveSourcePost(postNumber);
+    scrollSourcePostIntoView(postNumber);
+  }
+
+  function selectWorkbenchTab(tabId: WorkbenchTab) {
+    setActiveTab(tabId);
+    if (tabId !== "source") {
+      return;
+    }
+    setActiveSourcePost(posts[0]?.post_number ?? null);
+  }
+
+  useEffect(() => {
+    if (activeTab !== "source" || posts.length === 0) {
       return;
     }
 
     let frame: number | null = null;
     const updateFromScroll = () => {
       frame = null;
-      const maxScroll = Math.max(1, sourceList.scrollHeight - sourceList.clientHeight);
-      const ratio = Math.min(1, Math.max(0, sourceList.scrollTop / maxScroll));
-      const post = posts[Math.round(ratio * (posts.length - 1))];
-      if (post) {
-        setActiveSourcePost(post.post_number);
+      if (isTimelineDraggingRef.current) {
+        return;
+      }
+
+      const sourceRegion = sourceRegionRef.current;
+      const sourceList = sourceListRef.current;
+      if (!sourceRegion || !sourceList) {
+        return;
+      }
+
+      const regionRect = sourceRegion.getBoundingClientRect();
+      if (regionRect.top > window.innerHeight || regionRect.bottom < 0) {
+        return;
+      }
+
+      const anchorY = SOURCE_SCROLL_OFFSET + 18;
+      const sourceItems =
+        sourceList.querySelectorAll<HTMLElement>("[data-source-post]");
+      let activePostNumber = posts[0]?.post_number ?? null;
+
+      for (const item of sourceItems) {
+        const itemTop = item.getBoundingClientRect().top;
+        if (itemTop <= anchorY) {
+          activePostNumber = Number(item.dataset.sourcePost);
+        } else {
+          break;
+        }
+      }
+
+      if (activePostNumber !== null) {
+        setActiveSourcePost((currentPostNumber) =>
+          currentPostNumber === activePostNumber ? currentPostNumber : activePostNumber,
+        );
       }
     };
 
@@ -157,10 +211,12 @@ export default function ConversationWorkbench({
     };
 
     updateFromScroll();
-    sourceList.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
 
     return () => {
-      sourceList.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
       if (frame !== null) {
         cancelAnimationFrame(frame);
       }
@@ -211,7 +267,7 @@ export default function ConversationWorkbench({
               className={cn(tabButton, activeTab === tab.id && activeTabButton)}
               id={`tab-${tab.id}`}
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => selectWorkbenchTab(tab.id)}
               role="tab"
               type="button"
             >
@@ -260,7 +316,6 @@ export default function ConversationWorkbench({
 
           {activeTab === "path" ? (
             <GuidedSection
-              eyebrow="Reading path"
               id="path"
               title={`Read the thread in ${analysis.phases.length} ${
                 analysis.phases.length === 1 ? "phase" : "phases"
@@ -283,7 +338,6 @@ export default function ConversationWorkbench({
 
           {activeTab === "positions" ? (
             <GuidedSection
-              eyebrow="Positions"
               id="positions"
               title="Evidence for agreement and disagreement"
               intro="These sections are intentionally restrained: they point to likely evidence, then let the source post carry the argument."
@@ -327,7 +381,6 @@ export default function ConversationWorkbench({
 
           {activeTab === "voices" ? (
             <GuidedSection
-              eyebrow="Voices"
               id="voices"
               title="Who shaped the discussion"
               intro="Author rows stay compact until opened. Each expanded row shows the author's post cadence and the first few source messages."
@@ -348,14 +401,16 @@ export default function ConversationWorkbench({
 
           {activeTab === "source" ? (
             <GuidedSection
-              eyebrow="Source"
               id="source"
               title="Source messages remain available"
-              intro="The full thread is preserved below with source messages expanded and a timeline for jumping through the discussion."
+              intro="The full thread is preserved below with source messages expanded and a fixed timeline for jumping through the discussion."
             >
-              <div className="mt-6 grid h-[min(760px,calc(100vh-260px))] min-h-[520px] min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,190px)] items-start gap-4.5 max-lg:h-auto max-lg:min-h-0 max-lg:grid-cols-1">
+              <div
+                className="mt-6 grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,190px)] items-start gap-4.5 max-lg:grid-cols-1"
+                ref={sourceRegionRef}
+              >
                 <div
-                  className="grid max-h-full max-w-full min-w-0 gap-3.5 overflow-y-auto overscroll-contain pr-1.5 [overflow-anchor:none] max-lg:max-h-[70vh]"
+                  className="grid max-w-full min-w-0 gap-3.5 pr-1.5 [overflow-anchor:none]"
                   id="source-list"
                   ref={sourceListRef}
                 >
@@ -371,7 +426,13 @@ export default function ConversationWorkbench({
                 </div>
                 <SourceTimeline
                   activePostNumber={activeSourcePost}
-                  onActivePostChange={setActiveSourcePost}
+                  onDragEnd={() => {
+                    isTimelineDraggingRef.current = false;
+                  }}
+                  onDragStart={() => {
+                    isTimelineDraggingRef.current = true;
+                  }}
+                  onPostRequest={handleSourcePostRequest}
                   posts={posts}
                   sourceListRef={sourceListRef}
                 />
@@ -458,13 +519,11 @@ function BriefBlock({
 }
 
 function GuidedSection({
-  eyebrow,
   id,
   title,
   intro,
   children,
 }: {
-  eyebrow: string;
   id: string;
   title: string;
   intro: string;
@@ -472,9 +531,6 @@ function GuidedSection({
 }) {
   return (
     <section className="border-t-0 py-11 first:pt-6" id={id}>
-      <p className="border-kiri-hero/20 bg-kiri-hero/10 text-kiri-hero mb-3 w-fit rounded-full border px-2.5 py-1.5 text-[0.72rem] font-extrabold uppercase">
-        {eyebrow}
-      </p>
       <h2 className="text-2xl leading-tight font-black tracking-normal">{title}</h2>
       <p className="text-kiri-muted mt-2.5 max-w-[920px] leading-relaxed">{intro}</p>
       {children}
@@ -674,19 +730,26 @@ function EvidenceDrawer({
 function SourceTimeline({
   posts,
   activePostNumber,
-  onActivePostChange,
+  onDragEnd,
+  onDragStart,
+  onPostRequest,
   sourceListRef,
 }: {
   posts: TopicPost[];
   activePostNumber: number | null;
-  onActivePostChange: (postNumber: number) => void;
+  onDragEnd: () => void;
+  onDragStart: () => void;
+  onPostRequest: (postNumber: number) => void;
   sourceListRef: RefObject<HTMLDivElement | null>;
 }) {
   const [isDragging, setIsDragging] = useState(false);
   const lastDraggedPostRef = useRef<number | null>(null);
+  const isDraggingRef = useRef(false);
   const pendingRatioRef = useRef<number | null>(null);
   const dragFrameRef = useRef<number | null>(null);
+  const positionFrameRef = useRef<number | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const timelinePanelRef = useRef<HTMLDivElement>(null);
   const firstPost = posts[0];
   const lastPost = posts.at(-1);
   const activeIndex = Math.max(
@@ -702,8 +765,53 @@ function SourceTimeline({
       if (dragFrameRef.current !== null) {
         cancelAnimationFrame(dragFrameRef.current);
       }
+      if (positionFrameRef.current !== null) {
+        cancelAnimationFrame(positionFrameRef.current);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    const timelinePanel = timelinePanelRef.current;
+    if (!timelinePanel) {
+      return;
+    }
+
+    const updateTimelineTop = () => {
+      positionFrameRef.current = null;
+      const sourceList = sourceListRef.current;
+      if (!sourceList) {
+        timelinePanel.style.setProperty("--source-timeline-top", "92px");
+        return;
+      }
+
+      const listTop = sourceList.getBoundingClientRect().top;
+      timelinePanel.style.setProperty(
+        "--source-timeline-top",
+        `${Math.max(92, listTop)}px`,
+      );
+    };
+
+    const scheduleTimelineTopUpdate = () => {
+      if (positionFrameRef.current !== null) {
+        return;
+      }
+      positionFrameRef.current = requestAnimationFrame(updateTimelineTop);
+    };
+
+    updateTimelineTop();
+    window.addEventListener("scroll", scheduleTimelineTopUpdate, { passive: true });
+    window.addEventListener("resize", scheduleTimelineTopUpdate);
+
+    return () => {
+      window.removeEventListener("scroll", scheduleTimelineTopUpdate);
+      window.removeEventListener("resize", scheduleTimelineTopUpdate);
+      if (positionFrameRef.current !== null) {
+        cancelAnimationFrame(positionFrameRef.current);
+        positionFrameRef.current = null;
+      }
+    };
+  }, [sourceListRef]);
 
   function dragRatio(clientY: number): number | null {
     const track = trackRef.current;
@@ -727,18 +835,7 @@ function SourceTimeline({
     }
 
     lastDraggedPostRef.current = post.post_number;
-    onActivePostChange(post.post_number);
-  }
-
-  function scrollToTimelineRatio(ratio: number) {
-    const sourceList = sourceListRef.current;
-    if (!sourceList) {
-      return;
-    }
-
-    applyTimelineRatio(ratio);
-    const maxScroll = Math.max(0, sourceList.scrollHeight - sourceList.clientHeight);
-    sourceList.scrollTop = maxScroll * ratio;
+    onPostRequest(post.post_number);
   }
 
   function scheduleTimelineScroll(clientY: number) {
@@ -759,19 +856,21 @@ function SourceTimeline({
         return;
       }
 
-      scrollToTimelineRatio(pendingRatio);
+      applyTimelineRatio(pendingRatio);
     });
   }
 
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
+    isDraggingRef.current = true;
+    onDragStart();
     setIsDragging(true);
     scheduleTimelineScroll(event.clientY);
   }
 
   function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!isDragging) {
+    if (!isDraggingRef.current) {
       return;
     }
     scheduleTimelineScroll(event.clientY);
@@ -781,23 +880,37 @@ function SourceTimeline({
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
+    isDraggingRef.current = false;
     lastDraggedPostRef.current = null;
     pendingRatioRef.current = null;
+    if (dragFrameRef.current !== null) {
+      cancelAnimationFrame(dragFrameRef.current);
+      dragFrameRef.current = null;
+    }
+    onDragEnd();
     setIsDragging(false);
   }
 
   return (
     <aside
-      className="w-[190px] min-w-0 max-lg:order-first max-lg:w-auto"
+      className="w-[190px] min-w-0 self-start max-lg:order-first max-lg:w-auto"
       aria-label="Source timeline"
     >
-      <div className="border-kiri-ink/20 bg-kiri-hero/85 shadow-kiri-subtle grid h-full max-w-full grid-rows-[auto_minmax(0,1fr)_auto] overflow-clip rounded-lg border px-4.5 py-7 max-lg:min-h-[300px]">
-        <a
-          className="text-[0.96rem] font-bold text-[#b6c3bd] no-underline"
-          href={firstPost ? `#post-${firstPost.post_number}` : "#source"}
+      <div
+        className="border-kiri-ink/20 bg-kiri-hero/85 shadow-kiri-subtle fixed top-[var(--source-timeline-top,92px)] right-[clamp(20px,4vw,64px)] z-30 grid h-[calc(100vh-116px)] max-h-[760px] min-h-[520px] w-[190px] max-w-full grid-rows-[auto_minmax(0,1fr)_auto] overflow-clip rounded-lg border px-4.5 py-7 max-lg:static max-lg:h-auto max-lg:min-h-[300px] max-lg:w-auto"
+        ref={timelinePanelRef}
+      >
+        <button
+          className="cursor-pointer border-0 bg-transparent p-0 text-left text-[0.96rem] font-bold text-[#b6c3bd]"
+          onClick={() => {
+            if (firstPost) {
+              onPostRequest(firstPost.post_number);
+            }
+          }}
+          type="button"
         >
           {formatMonth(firstPost?.created_at ?? "")}
-        </a>
+        </button>
         <div
           aria-label={`Currently near post ${activeIndex + 1} of ${posts.length}, ${formatMonth(
             activePost?.created_at ?? "",
@@ -813,7 +926,7 @@ function SourceTimeline({
           <button
             aria-label={`Drag timeline marker. Currently near post ${activeIndex + 1} of ${posts.length}`}
             className={cn(
-              "font-inherit absolute left-3 grid w-[calc(100%-12px)] min-w-0 translate-y-[-16px] cursor-grab gap-1 border-0 bg-transparent pl-7 text-left text-[#f8fbf8]",
+              "font-inherit absolute left-3 grid w-[calc(100%-12px)] min-w-0 translate-y-[-16px] cursor-grab gap-1 border-0 bg-transparent pl-7 text-left text-[#f8fbf8] will-change-[top]",
               isDragging && "cursor-grabbing",
             )}
             style={{ top: `${handleTop}%` }}
@@ -829,12 +942,17 @@ function SourceTimeline({
             </span>
           </button>
         </div>
-        <a
-          className="text-[0.96rem] font-bold text-[#b6c3bd] no-underline"
-          href={lastPost ? `#post-${lastPost.post_number}` : "#source"}
+        <button
+          className="cursor-pointer border-0 bg-transparent p-0 text-left text-[0.96rem] font-bold text-[#b6c3bd]"
+          onClick={() => {
+            if (lastPost) {
+              onPostRequest(lastPost.post_number);
+            }
+          }}
+          type="button"
         >
           {formatMonth(lastPost?.created_at ?? "")}
-        </a>
+        </button>
       </div>
     </aside>
   );
@@ -854,6 +972,7 @@ function SourceMessage({
   return (
     <details
       className={cn(sectionPanel, "[&>summary::-webkit-details-marker]:hidden")}
+      data-source-post={post.post_number}
       id={`post-${post.post_number}`}
       open={expanded}
     >
