@@ -29,7 +29,7 @@ ENV NODE_ENV=production \
     KIRIGAMI_API_BASE_URL=http://backend:8000
 
 COPY --from=builder /app/apps/web/.next/standalone ./
-COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder /app/apps/web/.next/static ./.next/static
 
 EXPOSE 3000
 

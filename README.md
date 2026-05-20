@@ -46,7 +46,7 @@ Default URLs:
 - Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:8000`
 - Backend docs: `http://localhost:8000/docs`
-- Caddy deploy proxy: `https://0.0.0.0`
+- Caddy deploy proxy: `https://www.dpodoesnt.work`
 
 In development, `NEXT_PUBLIC_API_BASE_URL` points browser requests directly at
 the backend. In deploy mode, browser requests use same-origin `/api/...` through
@@ -55,11 +55,11 @@ internal backend URL.
 
 `mise run deploy` runs `docker compose up -d --build` and builds three images:
 FastAPI backend, Next.js frontend, and Caddy. Caddy listens on all interfaces on
-port `443` with `tls internal`, so browsers will see a local self-signed
-certificate unless the Caddy local CA is trusted. Override `KIRIGAMI_CADDY_ADDR`
-to change the Caddy bind address. The backend CORS defaults allow local
-development origins plus HTTPS Caddy origins on port `443`; use
-`KIRIGAMI_CORS_ORIGINS` or `KIRIGAMI_CORS_ORIGIN_REGEX` for other public hosts.
+port `443` for `https://www.dpodoesnt.work` with a generated self-signed
+certificate mounted from `deploy/certs`. Override `KIRIGAMI_CADDY_ADDR` to
+change the Caddy site address. The backend CORS defaults allow local development
+origins plus `https://www.dpodoesnt.work`; use `KIRIGAMI_CORS_ORIGINS` or
+`KIRIGAMI_CORS_ORIGIN_REGEX` for other public hosts.
 
 Docker Compose loads `.env` into all three services. For the Caddy deployment,
 leave `NEXT_PUBLIC_API_BASE_URL` empty so browser requests use same-origin
