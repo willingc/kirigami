@@ -3,9 +3,6 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEFAULT_CADDY_ADDR="https://www.dpodoesnt.work"
-CERT_DIR="${KIRIGAMI_CERT_DIR:-$ROOT_DIR/deploy/certs}"
-TLS_CERT_FILE="${KIRIGAMI_TLS_CERT_FILE:-$CERT_DIR/kirigami.crt}"
-TLS_KEY_FILE="${KIRIGAMI_TLS_KEY_FILE:-$CERT_DIR/kirigami.key}"
 DOCKERD_LOG="${KIRIGAMI_DOCKERD_LOG:-/tmp/kirigami-dockerd.log}"
 DOCKER_DATA_ROOT="${KIRIGAMI_DOCKER_DATA_ROOT:-/opt/kirigami-docker}"
 DOCKER_EXEC_ROOT="${KIRIGAMI_DOCKER_EXEC_ROOT:-/run/kirigami-docker-exec}"
@@ -15,80 +12,6 @@ DOCKER_SOCKET="${DOCKER_HOST#unix://}"
 export DOCKER_HOST
 
 cd "$ROOT_DIR"
-
-env_file_value() {
-  local name="$1"
-  if [[ -f .env ]]; then
-    awk -F= -v name="$name" '$1 == name { sub(/^[^=]*=/, ""); print; exit }' .env
-  fi
-}
-
-cert_host() {
-  local raw="${KIRIGAMI_CADDY_ADDR:-$(env_file_value KIRIGAMI_CADDY_ADDR)}"
-  raw="${raw:-$DEFAULT_CADDY_ADDR}"
-  raw="${raw#http://}"
-  raw="${raw#https://}"
-  raw="${raw%%/*}"
-  raw="${raw%%:*}"
-  raw="${raw:-${DEFAULT_CADDY_ADDR#https://}}"
-  printf '%s' "$raw"
-}
-
-cert_san() {
-  local san="${KIRIGAMI_TLS_CERT_SAN:-IP:127.0.0.1,DNS:localhost}"
-  local host
-  host="$(cert_host)"
-  if [[ -n "$host" && "$host" != "0.0.0.0" && "$host" != "*" ]]; then
-    if [[ "$host" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-      san="IP:$host,$san"
-    else
-      san="DNS:$host,$san"
-    fi
-  fi
-  printf '%s' "$san"
-}
-
-cert_matches_host() {
-  local host="$1"
-  if [[ ! -f "$TLS_CERT_FILE" || -z "$host" || "$host" == "0.0.0.0" || "$host" == "*" ]]; then
-    return 1
-  fi
-
-  if [[ "$host" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    openssl x509 -in "$TLS_CERT_FILE" -noout -ext subjectAltName 2>/dev/null | grep -Fq "IP Address:$host"
-  else
-    openssl x509 -in "$TLS_CERT_FILE" -noout -ext subjectAltName 2>/dev/null | grep -Fq "DNS:$host"
-  fi
-}
-
-ensure_self_signed_cert() {
-  local host
-  host="$(cert_host)"
-
-  if [[ -f "$TLS_CERT_FILE" && -f "$TLS_KEY_FILE" ]] && cert_matches_host "$host"; then
-    return
-  fi
-
-  if ! command -v openssl >/dev/null 2>&1; then
-    echo "OpenSSL is required to generate the Caddy self-signed certificate." >&2
-    echo "Enter the Nix shell first: nix develop" >&2
-    exit 127
-  fi
-
-  mkdir -p "$CERT_DIR"
-  openssl req \
-    -x509 \
-    -newkey rsa:2048 \
-    -sha256 \
-    -days "${KIRIGAMI_TLS_CERT_DAYS:-825}" \
-    -nodes \
-    -keyout "$TLS_KEY_FILE" \
-    -out "$TLS_CERT_FILE" \
-    -subj "/CN=${KIRIGAMI_TLS_CERT_CN:-$host}" \
-    -addext "subjectAltName=$(cert_san)"
-  chmod 600 "$TLS_KEY_FILE"
-  chmod 644 "$TLS_CERT_FILE"
-}
 
 KIRIGAMI_CADDY_ADDR="${KIRIGAMI_DEPLOY_CADDY_ADDR:-$DEFAULT_CADDY_ADDR}"
 KIRIGAMI_API_BASE_URL="${KIRIGAMI_DEPLOY_API_BASE_URL:-http://backend:8000}"
@@ -105,8 +28,6 @@ export KIRIGAMI_API_UPSTREAM
 export KIRIGAMI_WEB_UPSTREAM
 export KIRIGAMI_CORS_ORIGINS
 export KIRIGAMI_CORS_ORIGIN_REGEX
-
-ensure_self_signed_cert
 
 if ! docker info >/dev/null 2>&1; then
   if ! command -v dockerd >/dev/null 2>&1; then

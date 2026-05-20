@@ -1,6 +1,5 @@
 {$KIRIGAMI_CADDY_ADDR:https://www.dpodoesnt.work} {
 	bind 0.0.0.0
-	tls {$KIRIGAMI_TLS_CERT:/etc/caddy/certs/kirigami.crt} {$KIRIGAMI_TLS_KEY:/etc/caddy/certs/kirigami.key}
 	encode zstd gzip
 
 	handle /api/* {

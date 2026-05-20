@@ -59,15 +59,13 @@ services:
       KIRIGAMI_CADDY_ADDR: ${KIRIGAMI_CADDY_ADDR:-https://www.dpodoesnt.work}
       KIRIGAMI_API_UPSTREAM: ${KIRIGAMI_API_UPSTREAM:-backend:8000}
       KIRIGAMI_WEB_UPSTREAM: ${KIRIGAMI_WEB_UPSTREAM:-frontend:3000}
-      KIRIGAMI_TLS_CERT: ${KIRIGAMI_TLS_CERT:-/etc/caddy/certs/kirigami.crt}
-      KIRIGAMI_TLS_KEY: ${KIRIGAMI_TLS_KEY:-/etc/caddy/certs/kirigami.key}
     depends_on:
       - backend
       - frontend
     ports:
+      - "80:80"
       - "443:443"
     volumes:
-      - ./deploy/certs:/etc/caddy/certs:ro
       - caddy_data:/data
       - caddy_config:/config
 

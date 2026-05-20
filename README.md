@@ -55,8 +55,8 @@ internal backend URL.
 
 `mise run deploy` runs `docker compose up -d --build` and builds three images:
 FastAPI backend, Next.js frontend, and Caddy. Caddy listens on all interfaces on
-port `443` for `https://www.dpodoesnt.work` with a generated self-signed
-certificate mounted from `deploy/certs`. Override `KIRIGAMI_CADDY_ADDR` to
+ports `80` and `443` for `https://www.dpodoesnt.work`; Caddy obtains and renews
+the Let's Encrypt certificate automatically. Override `KIRIGAMI_CADDY_ADDR` to
 change the Caddy site address. The backend CORS defaults allow local development
 origins plus `https://www.dpodoesnt.work`; use `KIRIGAMI_CORS_ORIGINS` or
 `KIRIGAMI_CORS_ORIGIN_REGEX` for other public hosts.
