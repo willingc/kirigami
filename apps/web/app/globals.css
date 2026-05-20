@@ -77,17 +77,88 @@ ul {
   justify-content: space-between;
   gap: 16px;
   width: 100%;
-  padding: 16px clamp(20px, 4vw, 64px) 0;
+  padding: 14px clamp(20px, 4vw, 64px);
 }
 
 .appHeader a {
   text-decoration: none;
 }
 
-.brandLink {
+.brandLogo {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
   color: var(--hero);
+  text-decoration: none;
+}
+
+.brandMark {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border: 1px solid rgba(22, 50, 43, 0.24);
+  border-radius: 8px;
+  background: #f8fbf8;
+  box-shadow: 0 10px 24px rgba(23, 34, 30, 0.16);
+}
+
+.brandMark::before,
+.brandMark::after,
+.brandMarkFold {
+  position: absolute;
+  inset: 0;
+  content: "";
+}
+
+.brandMark::before {
+  clip-path: polygon(0 0, 100% 0, 50% 50%);
+  background: #d4edf7;
+}
+
+.brandMark::after {
+  clip-path: polygon(0 100%, 100% 100%, 50% 50%);
+  background: #0a6b96;
+}
+
+.brandMarkFoldA {
+  clip-path: polygon(0 0, 50% 50%, 0 100%);
+  background: #4c9bd3;
+}
+
+.brandMarkFoldB {
+  clip-path: polygon(100% 0, 100% 100%, 50% 50%);
+  background: #f5c06f;
+}
+
+.brandMarkFoldC {
+  inset: 12px 15px 11px;
+  clip-path: polygon(50% 0, 100% 100%, 70% 100%, 50% 52%, 30% 100%, 0 100%);
+  background: #16322b;
+}
+
+.brandWordmark {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.brandWordmark strong {
+  color: inherit;
   font-size: 1.05rem;
   font-weight: 950;
+  line-height: 1;
+}
+
+.brandWordmark span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.15;
+  text-transform: uppercase;
 }
 
 .appHeader nav {
@@ -123,6 +194,26 @@ ul {
   background:
     linear-gradient(135deg, var(--hero) 0%, var(--hero-2) 58%, #785334 100%);
   box-shadow: none;
+}
+
+.homeBrand {
+  margin-bottom: clamp(44px, 9vh, 92px);
+  color: #fbfffc;
+}
+
+.homeBrand .brandMark {
+  width: 58px;
+  height: 58px;
+  border-color: rgba(255, 255, 255, 0.38);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.18);
+}
+
+.homeBrand .brandWordmark strong {
+  font-size: 1.28rem;
+}
+
+.homeBrand .brandWordmark span {
+  color: #d9e8df;
 }
 
 .homeHero h1 {
@@ -634,9 +725,13 @@ ul {
   background: rgba(255, 255, 255, 0.58);
 }
 
+.briefSignalEvidence {
+  display: grid;
+  gap: 6px;
+}
+
 .briefSignalList strong {
   display: block;
-  margin-bottom: 4px;
   color: var(--ink);
   font-size: 0.9rem;
 }
@@ -987,6 +1082,21 @@ ul {
   line-height: 1.52;
 }
 
+.signalCode {
+  max-width: 100%;
+  overflow: auto;
+  border: 1px solid rgba(189, 203, 196, 0.9);
+  border-radius: 8px;
+  padding: 12px;
+  background: #202420;
+  color: #f4f6f3;
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  white-space: pre;
+}
+
 .evidenceDrawer {
   width: fit-content;
   max-width: 100%;
@@ -1076,6 +1186,26 @@ ul {
   background: linear-gradient(180deg, var(--surface-soft), #ffffff);
 }
 
+.sourcePreview-agreement {
+  border-top-color: var(--accent);
+  background: linear-gradient(180deg, #e2f3fb, #ffffff 38%);
+}
+
+.sourcePreview-disagreement {
+  border-top-color: var(--contest);
+  background: linear-gradient(180deg, #ffe7d7, #ffffff 38%);
+}
+
+.sourcePreview-question {
+  border-top-color: var(--note);
+  background: linear-gradient(180deg, #ece2f8, #ffffff 38%);
+}
+
+.sourcePreview-progress {
+  border-top-color: var(--progress);
+  background: linear-gradient(180deg, #d8f1e5, #ffffff 38%);
+}
+
 .sourcePreview header p {
   color: var(--ink);
   font-weight: 850;
@@ -1100,6 +1230,59 @@ ul {
   width: fit-content;
   background: var(--note-soft);
   color: var(--note);
+}
+
+.postContextList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.postContext {
+  min-width: 0;
+  border: 1px solid rgba(189, 203, 196, 0.95);
+  border-left-width: 5px;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.postContext-agreement {
+  border-left-color: var(--accent);
+}
+
+.postContext-disagreement {
+  border-left-color: var(--contest);
+}
+
+.postContext-question {
+  border-left-color: var(--note);
+}
+
+.postContext-progress {
+  border-left-color: var(--progress);
+}
+
+.postContext dt {
+  color: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.postContext dd {
+  margin-top: 5px;
+  color: #303733;
+  font-size: 0.94rem;
+  line-height: 1.48;
+}
+
+.postContext dd > p {
+  margin: 0;
+}
+
+.postContext .signalCode {
+  margin: 0;
 }
 
 .postBody {
@@ -1192,6 +1375,13 @@ ul {
   line-height: 1.64;
 }
 
+.discoursePost hr {
+  height: 1px;
+  margin: 1.35em 0;
+  border: 0;
+  background: var(--line);
+}
+
 .discoursePost h1,
 .discoursePost h2,
 .discoursePost h3,
@@ -1219,7 +1409,18 @@ ul {
   padding-left: 1.35rem;
 }
 
+.discoursePost ul ul,
+.discoursePost ul ol,
+.discoursePost ol ul,
+.discoursePost ol ol {
+  margin: 0.35em 0 0.45em;
+}
+
 .discoursePost li {
+  margin: 0.35em 0;
+}
+
+.discoursePost li > p {
   margin: 0.35em 0;
 }
 
@@ -1237,6 +1438,11 @@ ul {
   border-radius: 0 8px 8px 0;
   padding: 12px 14px;
   background: var(--note-soft);
+  color: #3d453f;
+}
+
+.discoursePost blockquote p,
+.discoursePost aside.quote p {
   color: #3d453f;
 }
 
@@ -1305,6 +1511,7 @@ ul {
   overflow: auto;
   border-collapse: collapse;
   margin: 1em 0;
+  font-size: 0.92rem;
 }
 
 .discoursePost th,
@@ -1312,6 +1519,25 @@ ul {
   border: 1px solid var(--line);
   padding: 8px 10px;
   text-align: left;
+}
+
+.discoursePost thead th {
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.discoursePost details {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.discoursePost details summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 850;
 }
 
 .discoursePost .lightbox-wrapper,
@@ -1387,7 +1613,21 @@ ul {
 
 @media (max-width: 680px) {
   .appHeader {
-    padding: 14px 10px 0;
+    align-items: center;
+    padding: 12px 10px;
+  }
+
+  .brandLogo {
+    gap: 9px;
+  }
+
+  .brandMark {
+    width: 38px;
+    height: 38px;
+  }
+
+  .brandWordmark span {
+    display: none;
   }
 
   .readerShell {
@@ -1401,6 +1641,10 @@ ul {
   .homeHero {
     min-height: 100vh;
     padding: 32px 18px;
+  }
+
+  .homeBrand {
+    margin-bottom: 42px;
   }
 
   .homeHero h1 {

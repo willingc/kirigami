@@ -44,6 +44,13 @@ const categoryNotes: Record<SignalCategory, string> = {
   progress: "Posts that mention proposals, revisions, next steps, or decisions.",
 };
 
+const postContextLabels: Record<SignalCategory, string> = {
+  agreement: "Where it seems to converge",
+  disagreement: "What remains contested",
+  question: "Open question",
+  progress: "Progress marker",
+};
+
 function sourcePostUrl(sourceUrl: string, postNumber: number): string {
   return `${sourceUrl.replace(/\/$/, "")}/${postNumber}`;
 }
@@ -73,6 +80,7 @@ export default function ConversationWorkbench({
     () => new Map(posts.map((post) => [post.post_number, post])),
     [posts],
   );
+  const signalsByPost = useMemo(() => signalsGroupedByPost(analysis), [analysis]);
   const firstPost = posts[0];
   const lastPost = posts.at(-1);
 
@@ -172,6 +180,7 @@ export default function ConversationWorkbench({
                 }
                 post={firstPost}
                 sourceUrl={meta.sourceUrl}
+                signalsByPost={signalsByPost}
               />
               <BriefBlock
                 title="Where it seems to converge"
@@ -179,6 +188,7 @@ export default function ConversationWorkbench({
                 signals={analysis.signals.agreement.slice(0, 3)}
                 postsByNumber={postsByNumber}
                 sourceUrl={meta.sourceUrl}
+                signalsByPost={signalsByPost}
               />
               <BriefBlock
                 title="What remains contested"
@@ -186,6 +196,7 @@ export default function ConversationWorkbench({
                 signals={analysis.signals.disagreement.slice(0, 3)}
                 postsByNumber={postsByNumber}
                 sourceUrl={meta.sourceUrl}
+                signalsByPost={signalsByPost}
               />
             </section>
           ) : null}
@@ -206,6 +217,7 @@ export default function ConversationWorkbench({
                     phase={phase}
                     postsByNumber={postsByNumber}
                     sourceUrl={meta.sourceUrl}
+                    signalsByPost={signalsByPost}
                   />
                 ))}
               </div>
@@ -225,6 +237,7 @@ export default function ConversationWorkbench({
                   category="agreement"
                   postsByNumber={postsByNumber}
                   sourceUrl={meta.sourceUrl}
+                  signalsByPost={signalsByPost}
                   limit={6}
                 />
                 <SignalSection
@@ -232,6 +245,7 @@ export default function ConversationWorkbench({
                   category="disagreement"
                   postsByNumber={postsByNumber}
                   sourceUrl={meta.sourceUrl}
+                  signalsByPost={signalsByPost}
                   limit={6}
                 />
                 <SignalSection
@@ -239,6 +253,7 @@ export default function ConversationWorkbench({
                   category="question"
                   postsByNumber={postsByNumber}
                   sourceUrl={meta.sourceUrl}
+                  signalsByPost={signalsByPost}
                   limit={5}
                 />
                 <SignalSection
@@ -246,6 +261,7 @@ export default function ConversationWorkbench({
                   category="progress"
                   postsByNumber={postsByNumber}
                   sourceUrl={meta.sourceUrl}
+                  signalsByPost={signalsByPost}
                   limit={5}
                 />
               </div>
@@ -266,6 +282,7 @@ export default function ConversationWorkbench({
                     key={author.username}
                     posts={posts.filter((post) => post.username === author.username)}
                     sourceUrl={meta.sourceUrl}
+                    signalsByPost={signalsByPost}
                   />
                 ))}
               </div>
@@ -287,6 +304,7 @@ export default function ConversationWorkbench({
                       key={post.id}
                       post={post}
                       sourceUrl={meta.sourceUrl}
+                      signals={signalsByPost.get(post.post_number)}
                     />
                   ))}
                 </div>
@@ -318,6 +336,7 @@ function BriefBlock({
   signals,
   postsByNumber,
   sourceUrl,
+  signalsByPost,
 }: {
   title: string;
   body: string;
@@ -325,6 +344,7 @@ function BriefBlock({
   signals?: Signal[];
   postsByNumber?: Map<number, TopicPost>;
   sourceUrl: string;
+  signalsByPost: Map<number, Signal[]>;
 }) {
   return (
     <section className="briefBlock">
@@ -335,15 +355,16 @@ function BriefBlock({
             const sourcePost = postsByNumber.get(signal.postNumber);
             return sourcePost ? (
               <li key={`${signal.category}-${signal.postNumber}`}>
-                <p>
+                <div className="briefSignalEvidence">
                   <strong>@{signal.username}</strong>
-                  <span>{signal.evidence}</span>
-                </p>
+                  <EvidenceText value={signal.evidence} />
+                </div>
                 <EvidenceDrawer
                   label={`#${signal.postNumber}`}
                   post={sourcePost}
                   sourceUrl={sourceUrl}
                   signal={signal}
+                  signals={signalsByPost.get(signal.postNumber)}
                 />
               </li>
             ) : null;
@@ -353,7 +374,12 @@ function BriefBlock({
         <p>{body}</p>
       )}
       {post ? (
-        <EvidenceDrawer label={`#${post.post_number}`} post={post} sourceUrl={sourceUrl} />
+        <EvidenceDrawer
+          label={`#${post.post_number}`}
+          post={post}
+          sourceUrl={sourceUrl}
+          signals={signalsByPost.get(post.post_number)}
+        />
       ) : null}
     </section>
   );
@@ -386,10 +412,12 @@ function PhaseStep({
   phase,
   postsByNumber,
   sourceUrl,
+  signalsByPost,
 }: {
   phase: Phase;
   postsByNumber: Map<number, TopicPost>;
   sourceUrl: string;
+  signalsByPost: Map<number, Signal[]>;
 }) {
   const openingPost = postsByNumber.get(phase.postStart);
   const closingPost = postsByNumber.get(phase.postEnd);
@@ -415,6 +443,7 @@ function PhaseStep({
               label={`Open #${phase.postStart}`}
               post={openingPost}
               sourceUrl={sourceUrl}
+              signals={signalsByPost.get(openingPost.post_number)}
             />
           ) : null}
           {closingPost && closingPost.post_number !== openingPost?.post_number ? (
@@ -422,6 +451,7 @@ function PhaseStep({
               label={`Close #${phase.postEnd}`}
               post={closingPost}
               sourceUrl={sourceUrl}
+              signals={signalsByPost.get(closingPost.post_number)}
             />
           ) : null}
         </div>
@@ -435,12 +465,14 @@ function SignalSection({
   category,
   postsByNumber,
   sourceUrl,
+  signalsByPost,
   limit,
 }: {
   analysis: ConversationAnalysis;
   category: SignalCategory;
   postsByNumber: Map<number, TopicPost>;
   sourceUrl: string;
+  signalsByPost: Map<number, Signal[]>;
   limit: number;
 }) {
   const signals = analysis.signals[category].slice(0, limit);
@@ -461,12 +493,13 @@ function SignalSection({
 
           return (
             <li key={`${signal.category}-${signal.postNumber}`}>
-              <p>{signal.evidence}</p>
+              <EvidenceText value={signal.evidence} />
               <EvidenceDrawer
                 label={`#${signal.postNumber} · @${signal.username}`}
                 post={sourcePost}
                 sourceUrl={sourceUrl}
                 signal={signal}
+                signals={signalsByPost.get(signal.postNumber)}
               />
             </li>
           );
@@ -480,10 +513,12 @@ function AuthorRow({
   author,
   posts,
   sourceUrl,
+  signalsByPost,
 }: {
   author: AuthorSummary;
   posts: TopicPost[];
   sourceUrl: string;
+  signalsByPost: Map<number, Signal[]>;
 }) {
   return (
     <details className="authorRow">
@@ -507,6 +542,7 @@ function AuthorRow({
               label={`#${post.post_number}`}
               post={post}
               sourceUrl={sourceUrl}
+              signals={signalsByPost.get(post.post_number)}
             />
           ))}
         </div>
@@ -520,16 +556,18 @@ function EvidenceDrawer({
   post,
   sourceUrl,
   signal,
+  signals,
 }: {
   label: string;
   post: TopicPost;
   sourceUrl: string;
   signal?: Signal;
+  signals?: Signal[];
 }) {
   return (
     <details className="evidenceDrawer">
       <summary>{label}</summary>
-      <SourcePreview post={post} signal={signal} sourceUrl={sourceUrl} />
+      <SourcePreview post={post} signal={signal} signals={signals} sourceUrl={sourceUrl} />
     </details>
   );
 }
@@ -690,10 +728,12 @@ function SourceTimeline({
 function SourceMessage({
   post,
   sourceUrl,
+  signals,
   expanded = false,
 }: {
   post: TopicPost;
   sourceUrl: string;
+  signals?: Signal[];
   expanded?: boolean;
 }) {
   return (
@@ -703,7 +743,7 @@ function SourceMessage({
         <strong>@{post.username}</strong>
         <em>{formatTime(post.created_at)}</em>
       </summary>
-      <SourcePreview post={post} showRaw sourceUrl={sourceUrl} />
+      <SourcePreview post={post} showRaw signals={signals} sourceUrl={sourceUrl} />
     </details>
   );
 }
@@ -712,15 +752,23 @@ function SourcePreview({
   post,
   sourceUrl,
   signal,
+  signals,
   showRaw = false,
 }: {
   post: TopicPost;
   sourceUrl: string;
   signal?: Signal;
+  signals?: Signal[];
   showRaw?: boolean;
 }) {
+  const postSignals = summarizePostSignals(signal, signals);
+  const primaryCategory = postSignals[0]?.category;
+  const previewClassName = primaryCategory
+    ? `sourcePreview sourcePreview-${primaryCategory}`
+    : "sourcePreview";
+
   return (
-    <article className="sourcePreview">
+    <article className={previewClassName}>
       <header>
         <div>
           <p>
@@ -733,6 +781,19 @@ function SourcePreview({
 
       {signal ? (
         <p className="matchNote">Matched: {signal.matchedTerms.slice(0, 4).join(", ")}</p>
+      ) : null}
+
+      {postSignals.length > 0 ? (
+        <dl className="postContextList" aria-label="Post formatting context">
+          {postSignals.map((postSignal) => (
+            <div className={`postContext postContext-${postSignal.category}`} key={postSignal.category}>
+              <dt>{postContextLabels[postSignal.category]}</dt>
+              <dd>
+                <EvidenceText value={postSignal.evidence} />
+              </dd>
+            </div>
+          ))}
+        </dl>
       ) : null}
 
       <div
@@ -756,6 +817,103 @@ function SourcePreview({
       ) : null}
     </article>
   );
+}
+
+function EvidenceText({ value }: { value: string }) {
+  if (looksLikeCodeEvidence(value)) {
+    return (
+      <pre className="signalCode">
+        <code>{formatFlattenedCode(value)}</code>
+      </pre>
+    );
+  }
+
+  return <p>{value}</p>;
+}
+
+function signalsGroupedByPost(analysis: ConversationAnalysis): Map<number, Signal[]> {
+  const groupedSignals = new Map<number, Signal[]>();
+
+  for (const category of Object.keys(analysis.signals) as SignalCategory[]) {
+    for (const signal of analysis.signals[category]) {
+      const existingSignals = groupedSignals.get(signal.postNumber) ?? [];
+      groupedSignals.set(signal.postNumber, [...existingSignals, signal]);
+    }
+  }
+
+  for (const [postNumber, postSignals] of groupedSignals) {
+    groupedSignals.set(
+      postNumber,
+      postSignals.sort((left, right) => {
+        const categoryDelta = categoryRank(left.category) - categoryRank(right.category);
+        if (categoryDelta !== 0) {
+          return categoryDelta;
+        }
+        return right.score - left.score;
+      }),
+    );
+  }
+
+  return groupedSignals;
+}
+
+function summarizePostSignals(signal?: Signal, signals: Signal[] = []): Signal[] {
+  const byCategory = new Map<SignalCategory, Signal>();
+  for (const postSignal of [signal, ...signals]) {
+    if (!postSignal) {
+      continue;
+    }
+
+    const existingSignal = byCategory.get(postSignal.category);
+    if (!existingSignal || postSignal.score > existingSignal.score) {
+      byCategory.set(postSignal.category, postSignal);
+    }
+  }
+
+  return [...byCategory.values()].sort(
+    (left, right) => categoryRank(left.category) - categoryRank(right.category),
+  );
+}
+
+function categoryRank(category: SignalCategory): number {
+  if (category === "agreement") {
+    return 0;
+  }
+  if (category === "disagreement") {
+    return 1;
+  }
+  if (category === "question") {
+    return 2;
+  }
+  return 3;
+}
+
+function looksLikeCodeEvidence(value: string): boolean {
+  const codeTokens = [
+    "PyObject",
+    "PyDict_",
+    "Py_DECREF",
+    "PyErr_",
+    "static void",
+    "static PyObject",
+    "def ",
+    "if __name__",
+    "return ",
+  ];
+  const tokenMatches = codeTokens.filter((token) => value.includes(token)).length;
+  const punctuationMatches = (value.match(/[{};()]/g) ?? []).length;
+
+  return tokenMatches >= 1 && punctuationMatches >= 4;
+}
+
+function formatFlattenedCode(value: string): string {
+  return value
+    .replace(/^([a-zA-Z+#]+)\s+(?=static\s|def\s|class\s|if\s|from\s|import\s)/, "")
+    .replace(/\s*(\{)\s*/g, " $1\n    ")
+    .replace(/\s*(\})\s*/g, "\n}\n")
+    .replace(/;\s*/g, ";\n    ")
+    .replace(/\n\s*\n+/g, "\n")
+    .trim();
 }
 
 function Field({ label, value }: { label: string; value: string | number }) {

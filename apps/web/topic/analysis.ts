@@ -77,8 +77,11 @@ const KEYWORDS: Record<SignalCategory, string[]> = {
 
 export function analyzeConversation(posts: TopicPost[]): ConversationAnalysis {
   const textByPost = new Map(posts.map((post) => [post.post_number, postText(post)]));
+  const signalTextByPost = new Map(
+    posts.map((post) => [post.post_number, proseTextForSignals(post)]),
+  );
   const quoteCounts = quotedPostCounts(posts);
-  const signals = buildSignals(posts, textByPost);
+  const signals = buildSignals(posts, signalTextByPost);
 
   return {
     metrics: {
@@ -106,6 +109,16 @@ export function analyzeConversation(posts: TopicPost[]): ConversationAnalysis {
 
 export function postText(post: TopicPost): string {
   return stripHtml(post.cooked || post.raw)
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function proseTextForSignals(post: TopicPost): string {
+  return stripHtml(
+    (post.cooked || post.raw)
+      .replace(/<pre[\s\S]*?<\/pre>/gi, " ")
+      .replace(/<h[1-6][\s\S]*?<\/h[1-6]>/gi, " "),
+  )
     .replace(/\s+/g, " ")
     .trim();
 }

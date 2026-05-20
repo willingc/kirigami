@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
+import BrandLogo from "@/components/brand-logo";
 import { clientApiBaseUrl } from "@/lib/api";
 import type { TopicListItem, TopicListResponse } from "@/lib/types";
 
@@ -189,6 +190,7 @@ export default function TopicSearch() {
   return (
     <main className="homeShell">
       <section className="homeHero">
+        <BrandLogo className="homeBrand" />
         <p className="eyebrow">Kirigami live reader</p>
         <h1>Understand long Discourse threads without losing the discussion.</h1>
         <p>

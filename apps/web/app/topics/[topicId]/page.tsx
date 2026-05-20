@@ -1,4 +1,4 @@
-import Link from "next/link";
+import BrandLogo from "@/components/brand-logo";
 import ConversationWorkbench from "@/components/conversation-workbench";
 import { loadTopicDocument, topicMetaFromDocument } from "@/topic/data";
 
@@ -15,12 +15,7 @@ export default async function TopicPage({
   return (
     <>
       <header className="appHeader">
-        <Link className="brandLink" href="/">
-          Kirigami
-        </Link>
-        <nav aria-label="Primary navigation">
-          <Link href="/">New thread</Link>
-        </nav>
+        <BrandLogo />
       </header>
       <ConversationWorkbench meta={topicMetaFromDocument(document)} posts={document.posts} />
     </>
