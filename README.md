@@ -35,6 +35,15 @@ Run the production-style Docker Compose stack behind Caddy:
 mise run deploy
 ```
 
+Or deploy to FastAPI Cloud (builds the Next.js static export and bundles it
+into the FastAPI app, so frontend and backend ship together behind one URL):
+
+```bash
+./deploy.sh
+```
+
+See [FASTAPI.md](FASTAPI.md) for FastAPI Cloud deploy details.
+
 Run the Python and frontend checks:
 
 ```bash
