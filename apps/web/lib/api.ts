@@ -20,7 +20,7 @@ export function clientApiBaseUrl() {
 
 export async function fetchApi<T>(path: string): Promise<ApiResult<T>> {
   try {
-    const response = await fetch(`${apiBaseUrl()}${path}`, {
+    const response = await fetch(`${clientApiBaseUrl()}${path}`, {
       cache: "no-store",
       headers: {
         Accept: "application/json",

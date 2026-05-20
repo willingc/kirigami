@@ -15,7 +15,7 @@ The repo is configured for FastAPI Cloud with:
   and dev server
 - `[tool.fastapi] entrypoint = "kirigami.api:app"`
 
-The entrypoint points to the FastAPI app exported from `src/kirigami/api.py`.
+The entrypoint points to the FastAPI app exported from `kirigami/api.py`.
 The Docker backend image installs FastAPI directly, so Docker does not depend on
 the optional `web` group.
 

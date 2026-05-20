@@ -791,7 +791,7 @@ source = { editable = "." }
 dependencies = [
     { name = "click" },
     { name = "click-default-group" },
-    { name = "fastapi" },
+    { name = "fastapi", extra = ["standard"] },
     { name = "flatten-json" },
     { name = "httpx" },
     { name = "json-flatten" },
@@ -818,7 +818,7 @@ web = [
 requires-dist = [
     { name = "click" },
     { name = "click-default-group" },
-    { name = "fastapi", specifier = ">=0.136" },
+    { name = "fastapi", extras = ["standard"], specifier = ">=0.136" },
     { name = "fastapi", extras = ["standard"], marker = "extra == 'web'", specifier = ">=0.136" },
     { name = "flatten-json" },
     { name = "httpx" },

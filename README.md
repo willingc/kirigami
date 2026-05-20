@@ -8,7 +8,7 @@ frontend and a FastAPI backend.
 
 The web template is split into two pieces:
 
-- `src/kirigami/api.py` exposes the Python backend.
+- `kirigami/api.py` exposes the Python backend.
 - `apps/web` contains the Next.js App Router frontend.
 
 Install the Python web extra and the frontend dependencies:

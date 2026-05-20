@@ -5,12 +5,12 @@
 Kirigami is a Python toolkit plus web app for reorganizing and analyzing
 dialogue-oriented text, especially Discourse topics.
 
-- Backend: `src/kirigami/api.py` is the FastAPI app.
+- Backend: `kirigami/api.py` is the FastAPI app.
 - Frontend: `apps/web` is a Next.js App Router app.
 - Topic pages live under `apps/web/app/topics/[topicId]/page.tsx`.
 - The main topic UI is `apps/web/components/conversation-workbench.tsx`.
 - Topic document loading and frontend topic types are under `apps/web/topic`.
-- Backend Discourse fetching/export code is under `src/kirigami/discourse`.
+- Backend Discourse fetching/export code is under `kirigami/discourse`.
 - Tests are under `tests`.
 
 Default local URLs:
