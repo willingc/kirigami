@@ -1,5 +1,8 @@
+https://dpodoesnt.work, http://dpodoesnt.work, http://www.dpodoesnt.work {
+	redir https://www.dpodoesnt.work{uri} permanent
+}
+
 {$KIRIGAMI_CADDY_ADDR:https://www.dpodoesnt.work} {
-	bind 0.0.0.0
 	encode zstd gzip
 
 	handle /api/* {
