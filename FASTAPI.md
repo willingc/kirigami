@@ -82,6 +82,15 @@ containing your app," **leave it empty** — `pyproject.toml` is at the repo roo
 and the package is at `kirigami/`, so the deploy root and the runtime cwd are
 both the repo root.
 
+### Continuous deployment
+
+`.github/workflows/fastapicloud-deploy.yml` runs the same build-and-deploy
+pipeline on every push to `main` (and on manual dispatch). It needs two GitHub
+repository secrets:
+
+- `FASTAPI_CLOUD_TOKEN` — a deploy token from FastAPI Cloud
+- `FASTAPI_CLOUD_APP_ID` — the app ID from `.fastapicloud/cloud.json`
+
 ## Environment Variables
 
 All Discourse credentials are optional. With nothing set, the backend hits

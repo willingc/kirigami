@@ -11,7 +11,7 @@ The web template is split into two pieces:
 - `kirigami/api.py` exposes the Python backend.
 - `apps/web` contains the Next.js App Router frontend.
 
-Install the Python web extra and the frontend dependencies:
+Install the Python and Next.js dependencies:
 
 ```bash
 mise run setup

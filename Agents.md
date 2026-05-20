@@ -54,8 +54,8 @@ Python version comes from `KIRIGAMI_PYTHON_VERSION` in `mise.toml`.
 Common checks:
 
 ```bash
-uv run --python "$KIRIGAMI_PYTHON_VERSION" --extra dev ruff check .
-uv run --python "$KIRIGAMI_PYTHON_VERSION" --extra dev --extra web pytest
+uv run --python "$KIRIGAMI_PYTHON_VERSION" ruff check .
+uv run --python "$KIRIGAMI_PYTHON_VERSION" pytest
 ```
 
 ## Required Finish Rule

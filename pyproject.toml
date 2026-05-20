@@ -37,14 +37,10 @@ dependencies = [
   "trogon",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
   "pytest>=8.0",
   "ruff>=0.8",
-]
-web = [
-  "fastapi[standard]>=0.136",
-  "uvicorn[standard]>=0.34",
 ]
 
 [project.scripts]
@@ -118,8 +114,8 @@ omit = [
 ]
 
 [tool.coverage.paths]
-kirigami = ["kirigami", "*/kirigami/kirigami"]
-tests = ["tests", "*/kirigami/tests"]
+kirigami = ["kirigami"]
+tests = ["tests"]
 
 [tool.coverage.report]
 exclude_lines = [

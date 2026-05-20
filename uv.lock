@@ -804,14 +804,10 @@ dependencies = [
     { name = "trogon" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "pytest" },
     { name = "ruff" },
-]
-web = [
-    { name = "fastapi", extra = ["standard"] },
-    { name = "uvicorn", extra = ["standard"] },
 ]
 
 [package.metadata]
@@ -819,22 +815,23 @@ requires-dist = [
     { name = "click" },
     { name = "click-default-group" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.136" },
-    { name = "fastapi", extras = ["standard"], marker = "extra == 'web'", specifier = ">=0.136" },
     { name = "flatten-json" },
     { name = "httpx" },
     { name = "json-flatten" },
     { name = "pydiscourse", specifier = "==1.7.0" },
     { name = "pyjanitor" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "requests", specifier = ">=2.34.2" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
     { name = "spacy", marker = "python_full_version < '3.14'", specifier = ">=3.8.14" },
     { name = "sqlite-utils" },
     { name = "trogon" },
-    { name = "uvicorn", extras = ["standard"], marker = "extra == 'web'", specifier = ">=0.34" },
 ]
-provides-extras = ["dev", "web"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=8.0" },
+    { name = "ruff", specifier = ">=0.8" },
+]
 
 [[package]]
 name = "linkify-it-py"

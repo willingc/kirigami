@@ -16,8 +16,7 @@ cleanup() {
 trap cleanup EXIT
 
 cd "$ROOT_DIR"
-uv run --python "$PYTHON_VERSION" --extra web uvicorn kirigami.api:app \
-  --app-dir src \
+uv run --python "$PYTHON_VERSION" uvicorn kirigami.api:app \
   --host "$API_HOST" \
   --port "$API_PORT" \
   --reload &
