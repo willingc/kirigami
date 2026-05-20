@@ -12,6 +12,7 @@ import type {
   TopicMeta,
   TopicPost,
 } from "@/topic/types";
+import { cn } from "@/lib/styles";
 
 const numberFormatter = new Intl.NumberFormat("en");
 const dateFormatter = new Intl.DateTimeFormat("en", {
@@ -65,6 +66,50 @@ const workbenchTabs = [
 
 type WorkbenchTab = (typeof workbenchTabs)[number]["id"];
 
+const pill =
+  "rounded-full border border-kiri-line/80 bg-kiri-surface px-3 py-1.5 text-[0.83rem] font-bold text-kiri-muted no-underline";
+const darkPill =
+  "rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[0.83rem] font-bold text-[#dceae2]";
+const panelText = "text-kiri-muted leading-relaxed";
+const tabList =
+  "mx-[clamp(20px,4vw,64px)] mt-4.5 flex flex-wrap gap-1.5 rounded-lg border border-kiri-ink/15 bg-kiri-hero/80 p-1.5 shadow-kiri-subtle max-sm:mx-2.5 max-sm:grid max-sm:grid-cols-1";
+const tabButton =
+  "min-h-[38px] min-w-0 rounded-lg border border-transparent px-3 py-2 text-left text-sm font-extrabold text-[#dceae2] enabled:cursor-pointer hover:bg-white/10";
+const activeTabButton =
+  "border-[#f5c06f]/90 bg-[#f5c06f] text-kiri-ink shadow-[0_8px_20px_rgba(0,0,0,0.14)] hover:bg-[#f5c06f]";
+const sectionPanel =
+  "max-w-full min-w-0 rounded-lg border border-kiri-line bg-[linear-gradient(180deg,#fbfdfb,#edf5f0)] shadow-kiri-subtle";
+const drawerDetails =
+  "max-w-full w-fit [&[open]]:w-full [&[open]>summary]:mb-2.5 [&[open]>summary]:border-kiri-accent [&[open]>summary]:bg-kiri-accent-soft";
+const drawerSummary =
+  "inline-flex min-h-[30px] cursor-pointer list-none items-center rounded-full border border-[#d7dfd9]/95 bg-kiri-soft px-3 py-1.5 text-[0.85rem] font-extrabold text-kiri-accent [&::-webkit-details-marker]:hidden";
+const sourceOpenButton =
+  "grid min-h-[34px] place-items-center whitespace-nowrap rounded-lg border border-kiri-accent/25 bg-kiri-accent px-3 text-[0.86rem] font-extrabold text-[#fbfffc] no-underline hover:bg-[#075f8d]";
+const sourcePreviewBase =
+  "grid max-w-full min-w-0 gap-3.5 border-t border-kiri-line bg-[linear-gradient(180deg,var(--surface-soft),#fff)] p-5.5";
+const sourcePreviewByCategory: Partial<Record<SignalCategory, string>> = {
+  agreement: "bg-[linear-gradient(180deg,#e2f3fb,#fbfdfb_42%)]",
+  disagreement: "bg-[linear-gradient(180deg,var(--contest-soft),#fbfdfb_42%)]",
+  question: "bg-[linear-gradient(180deg,var(--note-soft),#fbfdfb_42%)]",
+  progress: "bg-[linear-gradient(180deg,var(--progress-soft),#fbfdfb_42%)]",
+};
+const signalSectionByCategory: Record<SignalCategory, string> = {
+  agreement:
+    "border-t-4 border-t-kiri-accent bg-[linear-gradient(180deg,#e2f3fb,#fbfdfb_42%)] [&_h3]:text-kiri-accent",
+  disagreement:
+    "border-t-4 border-t-kiri-contest bg-[linear-gradient(180deg,var(--contest-soft),#fbfdfb_42%)] [&_h3]:text-kiri-contest",
+  question:
+    "border-t-4 border-t-kiri-note bg-[linear-gradient(180deg,var(--note-soft),#fbfdfb_42%)] [&_h3]:text-kiri-note",
+  progress:
+    "border-t-4 border-t-kiri-progress bg-[linear-gradient(180deg,var(--progress-soft),#fbfdfb_42%)] [&_h3]:text-kiri-progress",
+};
+const postContextBorder: Record<SignalCategory, string> = {
+  agreement: "border-l-kiri-accent",
+  disagreement: "border-l-kiri-contest",
+  question: "border-l-kiri-note",
+  progress: "border-l-kiri-progress",
+};
+
 export default function ConversationWorkbench({
   posts,
   meta,
@@ -82,7 +127,6 @@ export default function ConversationWorkbench({
   );
   const signalsByPost = useMemo(() => signalsGroupedByPost(analysis), [analysis]);
   const firstPost = posts[0];
-  const lastPost = posts.at(-1);
 
   useEffect(() => {
     if (activeTab !== "source" || posts.length === 0) {
@@ -124,34 +168,47 @@ export default function ConversationWorkbench({
   }, [activeTab, posts]);
 
   return (
-    <main className="readerShell">
-      <article className="readerArticle">
-        <header className="readerHero">
-          <p className="eyebrow">Kirigami guided reading</p>
-          <h1>{meta.title}</h1>
-          <p className="heroDeck">
-            A calmer path through Topic {meta.topicId}: start with the shape of the discussion,
-            then open exact source posts only when you need evidence.
-          </p>
-          <div className="heroMeta" aria-label="Conversation metrics">
-            <span>{numberFormatter.format(analysis.metrics.posts)} posts</span>
-            <span>{numberFormatter.format(analysis.metrics.participants)} authors</span>
-            <span>{analysis.metrics.estimatedReadMinutes} min source read</span>
-            <span>
-              {formatDate(analysis.metrics.firstPostAt)} to {formatDate(analysis.metrics.lastPostAt)}
+    <main className="w-full max-w-full overflow-x-clip pb-[72px] max-sm:pb-12">
+      <article className="w-full max-w-full min-w-0 overflow-x-clip">
+        <header className="max-w-full min-w-0 overflow-hidden bg-[radial-gradient(circle_at_78%_12%,rgba(245,192,111,0.2),transparent_28%),linear-gradient(135deg,var(--hero)_0%,var(--hero-2)_58%,#5f4a35_100%)] px-[clamp(20px,4vw,64px)] py-11.5 max-sm:p-6">
+          <h1 className="max-w-6xl text-[clamp(2.45rem,5vw,4.75rem)] leading-none font-black tracking-normal text-[#fbfffc] max-sm:text-[2.45rem]">
+            {meta.title}
+          </h1>
+          <div
+            className="mt-6.5 flex flex-wrap gap-2"
+            aria-label="Conversation metrics"
+          >
+            <span className={pill}>
+              {numberFormatter.format(analysis.metrics.posts)} posts
+            </span>
+            <span className={pill}>
+              {numberFormatter.format(analysis.metrics.participants)} authors
+            </span>
+            <span className={pill}>
+              {analysis.metrics.estimatedReadMinutes} min source read
+            </span>
+            <span className={pill}>
+              {formatDate(analysis.metrics.firstPostAt)} to{" "}
+              {formatDate(analysis.metrics.lastPostAt)}
             </span>
           </div>
-          <div className="heroActions">
-            <a href={meta.sourceUrl}>Open Discourse</a>
-            <span>Heuristic evidence, not conclusions</span>
+          <div className="mt-4.5 flex flex-wrap gap-2">
+            <a
+              className="text-kiri-ink rounded-full border border-[#f5c06f] bg-[#f5c06f] px-3 py-1.5 text-[0.83rem] font-bold no-underline"
+              href={meta.sourceUrl}
+            >
+              Open Discourse
+            </a>
+            <span className={darkPill}>Heuristic evidence, not conclusions</span>
           </div>
         </header>
 
-        <nav className="workbenchTabs" aria-label="Conversation views" role="tablist">
+        <nav className={tabList} aria-label="Conversation views" role="tablist">
           {workbenchTabs.map((tab) => (
             <button
               aria-controls={`panel-${tab.id}`}
               aria-selected={activeTab === tab.id}
+              className={cn(tabButton, activeTab === tab.id && activeTabButton)}
               id={`tab-${tab.id}`}
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -165,12 +222,12 @@ export default function ConversationWorkbench({
 
         <div
           aria-labelledby={`tab-${activeTab}`}
-          className="tabPanel"
+          className="mt-4.5 max-w-full min-w-0 px-[clamp(20px,4vw,64px)] max-sm:px-2.5"
           id={`panel-${activeTab}`}
           role="tabpanel"
         >
           {activeTab === "summary" ? (
-            <section className="briefPanel" id="brief">
+            <section className="mt-0 mb-12 grid gap-3.5 max-sm:gap-3" id="brief">
               <BriefBlock
                 title="What this discussion is about"
                 body={
@@ -210,7 +267,7 @@ export default function ConversationWorkbench({
               }`}
               intro="Phase boundaries are estimated from the thread's posting rhythm and source activity."
             >
-              <div className="pathList">
+              <div className="border-kiri-line shadow-kiri-subtle mt-6 grid gap-0 overflow-hidden rounded-lg border bg-[linear-gradient(180deg,#f7fbf8,#edf5f0)]">
                 {analysis.phases.map((phase) => (
                   <PhaseStep
                     key={phase.id}
@@ -231,7 +288,7 @@ export default function ConversationWorkbench({
               title="Evidence for agreement and disagreement"
               intro="These sections are intentionally restrained: they point to likely evidence, then let the source post carry the argument."
             >
-              <div className="evidenceSections">
+              <div className="mt-6 grid grid-cols-2 gap-3.5 max-lg:grid-cols-1">
                 <SignalSection
                   analysis={analysis}
                   category="agreement"
@@ -275,7 +332,7 @@ export default function ConversationWorkbench({
               title="Who shaped the discussion"
               intro="Author rows stay compact until opened. Each expanded row shows the author's post cadence and the first few source messages."
             >
-              <div className="voiceList">
+              <div className="mt-6 grid gap-3.5">
                 {analysis.authors.slice(0, 10).map((author) => (
                   <AuthorRow
                     author={author}
@@ -296,8 +353,12 @@ export default function ConversationWorkbench({
               title="Source messages remain available"
               intro="The full thread is preserved below with source messages expanded and a timeline for jumping through the discussion."
             >
-              <div className="sourceWorkspace">
-                <div className="sourceList" id="source-list" ref={sourceListRef}>
+              <div className="mt-6 grid h-[min(760px,calc(100vh-260px))] min-h-[520px] min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,190px)] items-start gap-4.5 max-lg:h-auto max-lg:min-h-0 max-lg:grid-cols-1">
+                <div
+                  className="grid max-h-full max-w-full min-w-0 gap-3.5 overflow-y-auto overscroll-contain pr-1.5 [overflow-anchor:none] max-lg:max-h-[70vh]"
+                  id="source-list"
+                  ref={sourceListRef}
+                >
                   {posts.map((post) => (
                     <SourceMessage
                       expanded
@@ -315,12 +376,6 @@ export default function ConversationWorkbench({
                   sourceListRef={sourceListRef}
                 />
               </div>
-              {lastPost ? (
-                <footer className="readerFooter">
-                  Last source post in this JSON: #{lastPost.post_number} by @{lastPost.username} on{" "}
-                  {formatTime(lastPost.created_at)}.
-                </footer>
-              ) : null}
             </GuidedSection>
           ) : null}
         </div>
@@ -346,17 +401,34 @@ function BriefBlock({
   sourceUrl: string;
   signalsByPost: Map<number, Signal[]>;
 }) {
+  const blockTone =
+    title === "Where it seems to converge"
+      ? "border-l-kiri-progress bg-[linear-gradient(135deg,var(--progress-soft)_0%,#fbfdfb_76%)]"
+      : title === "What remains contested"
+        ? "border-l-kiri-contest bg-[linear-gradient(135deg,var(--contest-soft)_0%,#fbfdfb_76%)]"
+        : "border-l-kiri-accent bg-[linear-gradient(135deg,#e8f5fa_0%,#fbfdfb_76%)]";
+
   return (
-    <section className="briefBlock">
-      <h2>{title}</h2>
+    <section
+      className={cn(
+        "border-kiri-line shadow-kiri-subtle grid min-w-0 content-start gap-3.5 rounded-lg border border-l-[5px] p-6.5 max-sm:p-4.5",
+        blockTone,
+      )}
+    >
+      <h2 className="text-2xl leading-tight font-black tracking-normal">{title}</h2>
       {signals && postsByNumber ? (
-        <ul className="briefSignalList">
+        <ul className="grid gap-3 pl-4.5">
           {signals.map((signal) => {
             const sourcePost = postsByNumber.get(signal.postNumber);
             return sourcePost ? (
-              <li key={`${signal.category}-${signal.postNumber}`}>
-                <div className="briefSignalEvidence">
-                  <strong>@{signal.username}</strong>
+              <li
+                className="border-kiri-line/45 grid gap-2.5 rounded-lg border bg-white/65 px-3.5 py-3"
+                key={`${signal.category}-${signal.postNumber}`}
+              >
+                <div className="grid gap-1.5">
+                  <strong className="text-kiri-ink text-sm font-black">
+                    @{signal.username}
+                  </strong>
                   <EvidenceText value={signal.evidence} />
                 </div>
                 <EvidenceDrawer
@@ -371,7 +443,7 @@ function BriefBlock({
           })}
         </ul>
       ) : (
-        <p>{body}</p>
+        <p className={panelText}>{body}</p>
       )}
       {post ? (
         <EvidenceDrawer
@@ -399,10 +471,12 @@ function GuidedSection({
   children: ReactNode;
 }) {
   return (
-    <section className="guidedSection" id={id}>
-      <p className="eyebrow">{eyebrow}</p>
-      <h2>{title}</h2>
-      <p className="sectionIntro">{intro}</p>
+    <section className="border-t-0 py-11 first:pt-6" id={id}>
+      <p className="border-kiri-hero/20 bg-kiri-hero/10 text-kiri-hero mb-3 w-fit rounded-full border px-2.5 py-1.5 text-[0.72rem] font-extrabold uppercase">
+        {eyebrow}
+      </p>
+      <h2 className="text-2xl leading-tight font-black tracking-normal">{title}</h2>
+      <p className="text-kiri-muted mt-2.5 max-w-[920px] leading-relaxed">{intro}</p>
       {children}
     </section>
   );
@@ -423,21 +497,23 @@ function PhaseStep({
   const closingPost = postsByNumber.get(phase.postEnd);
 
   return (
-    <section className="phaseStep">
-      <div className="phaseNumber">{phase.postStart}</div>
+    <section className="border-kiri-line/75 grid min-w-0 grid-cols-[84px_minmax(0,1fr)] gap-5.5 border-t bg-transparent px-7 py-6.5 first:border-t-0 max-sm:grid-cols-1 max-sm:p-3.5">
+      <div className="border-kiri-accent/20 bg-kiri-accent-soft text-kiri-accent grid h-16 w-16 place-items-center rounded-lg border text-base font-black">
+        {phase.postStart}
+      </div>
       <div>
-        <h3>{phase.label}</h3>
-        <p>
+        <h3 className="text-[1.08rem] leading-tight font-black">{phase.label}</h3>
+        <p className="text-kiri-muted mt-1.5 leading-relaxed">
           Posts #{phase.postStart}-#{phase.postEnd}, {phase.postCount} messages, led by{" "}
           {phase.dominantAuthors.map((author) => `@${author}`).join(", ")}.
         </p>
-        <div className="signalCounts">
-          <span>{phase.signalCounts.agreement} convergence</span>
-          <span>{phase.signalCounts.disagreement} contested</span>
-          <span>{phase.signalCounts.question} questions</span>
-          <span>{phase.signalCounts.progress} progress</span>
+        <div className="my-3 flex flex-wrap gap-2">
+          <span className={pill}>{phase.signalCounts.agreement} convergence</span>
+          <span className={pill}>{phase.signalCounts.disagreement} contested</span>
+          <span className={pill}>{phase.signalCounts.question} questions</span>
+          <span className={pill}>{phase.signalCounts.progress} progress</span>
         </div>
-        <div className="citationRow">
+        <div className="flex flex-wrap gap-2">
           {openingPost ? (
             <EvidenceDrawer
               label={`Open #${phase.postStart}`}
@@ -478,13 +554,25 @@ function SignalSection({
   const signals = analysis.signals[category].slice(0, limit);
 
   return (
-    <section className={`signalSection ${category}`}>
-      <header>
-        <h3>{categoryLabels[category]}</h3>
-        <span>{analysis.signals[category].length} matches</span>
+    <section
+      className={cn(
+        sectionPanel,
+        "p-5.5 max-sm:p-3.5",
+        signalSectionByCategory[category],
+      )}
+    >
+      <header className="flex items-start justify-between gap-3.5">
+        <h3 className="text-[1.08rem] leading-tight font-black">
+          {categoryLabels[category]}
+        </h3>
+        <span className="text-kiri-muted min-w-0 text-[0.82rem] font-extrabold [overflow-wrap:anywhere]">
+          {analysis.signals[category].length} matches
+        </span>
       </header>
-      <p>{categoryNotes[category]}</p>
-      <ol className="evidenceList">
+      <p className="text-kiri-muted mt-2 text-[0.94rem] leading-relaxed">
+        {categoryNotes[category]}
+      </p>
+      <ol className="mt-4 grid list-none gap-3 p-0">
         {signals.map((signal) => {
           const sourcePost = postsByNumber.get(signal.postNumber);
           if (!sourcePost) {
@@ -492,7 +580,10 @@ function SignalSection({
           }
 
           return (
-            <li key={`${signal.category}-${signal.postNumber}`}>
+            <li
+              className="grid gap-2 border-t border-[#d7dfd9]/85 pt-3.5 first:border-t-0 first:pt-0 [&_p]:text-[0.94rem] [&_p]:leading-normal [&_p]:text-[#303733]"
+              key={`${signal.category}-${signal.postNumber}`}
+            >
               <EvidenceText value={signal.evidence} />
               <EvidenceDrawer
                 label={`#${signal.postNumber} · @${signal.username}`}
@@ -521,21 +612,24 @@ function AuthorRow({
   signalsByPost: Map<number, Signal[]>;
 }) {
   return (
-    <details className="authorRow">
-      <summary>
-        <span>@{author.username}</span>
-        <em>
+    <details className={cn(sectionPanel, "[&>summary::-webkit-details-marker]:hidden")}>
+      <summary className="flex cursor-pointer list-none items-start justify-between gap-3.5 p-5.5 max-sm:flex-col">
+        <span className="text-kiri-accent min-w-0 font-black [overflow-wrap:anywhere]">
+          @{author.username}
+        </span>
+        <em className="text-kiri-muted min-w-0 text-sm font-bold [overflow-wrap:anywhere] not-italic">
           {author.posts} posts · {author.quotesReceived} quotes received
         </em>
       </summary>
-      <div className="authorDetails">
-        <p>
-          Active from {formatDate(author.firstPostAt)} to {formatDate(author.lastPostAt)}. Heuristic
-          signals: {author.signalCounts.agreement} convergence,{" "}
-          {author.signalCounts.disagreement} contested, {author.signalCounts.question} questions,{" "}
-          {author.signalCounts.progress} progress.
+      <div className="border-kiri-line border-t p-5.5">
+        <p className={panelText}>
+          Active from {formatDate(author.firstPostAt)} to{" "}
+          {formatDate(author.lastPostAt)}. Heuristic signals:{" "}
+          {author.signalCounts.agreement} convergence,{" "}
+          {author.signalCounts.disagreement} contested, {author.signalCounts.question}{" "}
+          questions, {author.signalCounts.progress} progress.
         </p>
-        <div className="miniPostList">
+        <div className="mt-3 flex flex-wrap gap-2">
           {posts.slice(0, 5).map((post) => (
             <EvidenceDrawer
               key={post.id}
@@ -565,9 +659,14 @@ function EvidenceDrawer({
   signals?: Signal[];
 }) {
   return (
-    <details className="evidenceDrawer">
-      <summary>{label}</summary>
-      <SourcePreview post={post} signal={signal} signals={signals} sourceUrl={sourceUrl} />
+    <details className={drawerDetails}>
+      <summary className={drawerSummary}>{label}</summary>
+      <SourcePreview
+        post={post}
+        signal={signal}
+        signals={signals}
+        sourceUrl={sourceUrl}
+      />
     </details>
   );
 }
@@ -688,36 +787,52 @@ function SourceTimeline({
   }
 
   return (
-    <aside className="sourceTimeline" aria-label="Source timeline">
-      <div className="timelineCard">
-        <a className="timelineMonth timelineMonthStart" href={firstPost ? `#post-${firstPost.post_number}` : "#source"}>
+    <aside
+      className="w-[190px] min-w-0 max-lg:order-first max-lg:w-auto"
+      aria-label="Source timeline"
+    >
+      <div className="border-kiri-ink/20 bg-kiri-hero/85 shadow-kiri-subtle grid h-full max-w-full grid-rows-[auto_minmax(0,1fr)_auto] overflow-clip rounded-lg border px-4.5 py-7 max-lg:min-h-[300px]">
+        <a
+          className="text-[0.96rem] font-bold text-[#b6c3bd] no-underline"
+          href={firstPost ? `#post-${firstPost.post_number}` : "#source"}
+        >
           {formatMonth(firstPost?.created_at ?? "")}
         </a>
         <div
           aria-label={`Currently near post ${activeIndex + 1} of ${posts.length}, ${formatMonth(
             activePost?.created_at ?? "",
           )}`}
-          className={`timelineTrack${isDragging ? " isDragging" : ""}`}
+          className="relative my-5.5 mb-14 min-h-[420px] cursor-pointer touch-none select-none max-lg:min-h-[170px]"
           onPointerCancel={handlePointerEnd}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerEnd}
           ref={trackRef}
         >
-          <div className="timelineLine" />
+          <div className="bg-kiri-accent/70 absolute top-0 bottom-0 left-4 w-0.5" />
           <button
             aria-label={`Drag timeline marker. Currently near post ${activeIndex + 1} of ${posts.length}`}
-            className="timelineHandle"
+            className={cn(
+              "font-inherit absolute left-3 grid w-[calc(100%-12px)] min-w-0 translate-y-[-16px] cursor-grab gap-1 border-0 bg-transparent pl-7 text-left text-[#f8fbf8]",
+              isDragging && "cursor-grabbing",
+            )}
             style={{ top: `${handleTop}%` }}
             type="button"
           >
-            <strong>
-              {numberFormatter.format(activeIndex + 1)} / {numberFormatter.format(posts.length)}
+            <span className="absolute top-px left-[-1px] h-16 w-3 rounded-full bg-[#4c9bd3]" />
+            <strong className="min-w-0 text-[1.04rem] leading-tight font-black [overflow-wrap:anywhere]">
+              {numberFormatter.format(activeIndex + 1)} /{" "}
+              {numberFormatter.format(posts.length)}
             </strong>
-            <span>{formatMonth(activePost?.created_at ?? "")}</span>
+            <span className="min-w-0 text-sm font-bold [overflow-wrap:anywhere] text-[#b6c3bd]">
+              {formatMonth(activePost?.created_at ?? "")}
+            </span>
           </button>
         </div>
-        <a className="timelineMonth timelineMonthEnd" href={lastPost ? `#post-${lastPost.post_number}` : "#source"}>
+        <a
+          className="text-[0.96rem] font-bold text-[#b6c3bd] no-underline"
+          href={lastPost ? `#post-${lastPost.post_number}` : "#source"}
+        >
           {formatMonth(lastPost?.created_at ?? "")}
         </a>
       </div>
@@ -737,13 +852,23 @@ function SourceMessage({
   expanded?: boolean;
 }) {
   return (
-    <details className="sourceMessage" id={`post-${post.post_number}`} open={expanded}>
-      <summary>
-        <span>#{post.post_number}</span>
-        <strong>@{post.username}</strong>
-        <em>{formatTime(post.created_at)}</em>
+    <details
+      className={cn(sectionPanel, "[&>summary::-webkit-details-marker]:hidden")}
+      id={`post-${post.post_number}`}
+      open={expanded}
+    >
+      <summary className="flex cursor-pointer list-none items-start justify-between gap-3.5 p-5.5 max-sm:flex-col">
+        <span className="text-kiri-accent min-w-0 font-black [overflow-wrap:anywhere]">
+          #{post.post_number}
+        </span>
+        <strong className="min-w-0 font-extrabold [overflow-wrap:anywhere]">
+          @{post.username}
+        </strong>
+        <em className="text-kiri-muted min-w-0 text-sm font-bold [overflow-wrap:anywhere] not-italic">
+          {formatTime(post.created_at)}
+        </em>
       </summary>
-      <SourcePreview post={post} showRaw signals={signals} sourceUrl={sourceUrl} />
+      <SourcePreview post={post} signals={signals} sourceUrl={sourceUrl} />
     </details>
   );
 }
@@ -753,42 +878,62 @@ function SourcePreview({
   sourceUrl,
   signal,
   signals,
-  showRaw = false,
 }: {
   post: TopicPost;
   sourceUrl: string;
   signal?: Signal;
   signals?: Signal[];
-  showRaw?: boolean;
 }) {
   const postSignals = summarizePostSignals(signal, signals);
   const primaryCategory = postSignals[0]?.category;
-  const previewClassName = primaryCategory
-    ? `sourcePreview sourcePreview-${primaryCategory}`
-    : "sourcePreview";
 
   return (
-    <article className={previewClassName}>
-      <header>
-        <div>
-          <p>
+    <article
+      className={cn(
+        sourcePreviewBase,
+        primaryCategory && sourcePreviewByCategory[primaryCategory],
+      )}
+    >
+      <header className="flex items-start justify-between gap-3.5 max-sm:flex-col">
+        <div className="min-w-0 [overflow-wrap:anywhere]">
+          <p className="text-kiri-ink font-extrabold">
             #{post.post_number} by @{post.username}
           </p>
-          <time dateTime={post.created_at}>{formatTime(post.created_at)}</time>
+          <time
+            className="text-kiri-muted mt-1 block text-[0.88rem] font-bold"
+            dateTime={post.created_at}
+          >
+            {formatTime(post.created_at)}
+          </time>
         </div>
-        <a href={sourcePostUrl(sourceUrl, post.post_number)}>Open source</a>
+        <a
+          className={sourceOpenButton}
+          href={sourcePostUrl(sourceUrl, post.post_number)}
+        >
+          Open source
+        </a>
       </header>
 
       {signal ? (
-        <p className="matchNote">Matched: {signal.matchedTerms.slice(0, 4).join(", ")}</p>
+        <p className="border-kiri-line/80 bg-kiri-note-soft text-kiri-note w-fit rounded-full border px-3 py-1.5 text-[0.83rem] font-bold">
+          Matched: {signal.matchedTerms.slice(0, 4).join(", ")}
+        </p>
       ) : null}
 
       {postSignals.length > 0 ? (
-        <dl className="postContextList" aria-label="Post formatting context">
+        <dl className="grid gap-2" aria-label="Post formatting context">
           {postSignals.map((postSignal) => (
-            <div className={`postContext postContext-${postSignal.category}`} key={postSignal.category}>
-              <dt>{postContextLabels[postSignal.category]}</dt>
-              <dd>
+            <div
+              className={cn(
+                "border-kiri-line min-w-0 rounded-lg border border-l-[5px] bg-white/75 px-3.5 py-3",
+                postContextBorder[postSignal.category],
+              )}
+              key={postSignal.category}
+            >
+              <dt className="text-kiri-ink text-[0.76rem] font-black uppercase">
+                {postContextLabels[postSignal.category]}
+              </dt>
+              <dd className="mt-1 text-[0.94rem] leading-normal text-[#303733] [&>p]:m-0">
                 <EvidenceText value={postSignal.evidence} />
               </dd>
             </div>
@@ -797,24 +942,9 @@ function SourcePreview({
       ) : null}
 
       <div
-        className="postBody discoursePost"
+        className="discoursePost border-kiri-line bg-kiri-surface max-w-full min-w-0 rounded-lg border p-5.5 text-[0.98rem] leading-relaxed [overflow-wrap:anywhere] text-[#303733] max-sm:p-3.5"
         dangerouslySetInnerHTML={{ __html: cookedHtml(post) }}
       />
-
-      <dl className="sourceStats">
-        <Field label="Replies" value={post.reply_count} />
-        <Field label="Quotes" value={post.quote_count} />
-        <Field label="Reads" value={post.reads} />
-        <Field label="Score" value={Math.round(post.score)} />
-      </dl>
-
-      {showRaw ? (
-        <details className="rawSource">
-          <summary>Raw markdown and JSON</summary>
-          <pre>{post.raw || "No raw markdown in this record."}</pre>
-          <pre>{JSON.stringify(post, null, 2)}</pre>
-        </details>
-      ) : null}
     </article>
   );
 }
@@ -822,7 +952,7 @@ function SourcePreview({
 function EvidenceText({ value }: { value: string }) {
   if (looksLikeCodeEvidence(value)) {
     return (
-      <pre className="signalCode">
+      <pre className="border-kiri-line max-w-full overflow-auto rounded-lg border bg-[#202420] p-3 font-mono text-[0.82rem] leading-normal whitespace-pre text-[#f4f6f3]">
         <code>{formatFlattenedCode(value)}</code>
       </pre>
     );
@@ -845,7 +975,8 @@ function signalsGroupedByPost(analysis: ConversationAnalysis): Map<number, Signa
     groupedSignals.set(
       postNumber,
       postSignals.sort((left, right) => {
-        const categoryDelta = categoryRank(left.category) - categoryRank(right.category);
+        const categoryDelta =
+          categoryRank(left.category) - categoryRank(right.category);
         if (categoryDelta !== 0) {
           return categoryDelta;
         }
@@ -914,15 +1045,6 @@ function formatFlattenedCode(value: string): string {
     .replace(/;\s*/g, ";\n    ")
     .replace(/\n\s*\n+/g, "\n")
     .trim();
-}
-
-function Field({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div>
-      <dt>{label}</dt>
-      <dd>{typeof value === "number" ? numberFormatter.format(value) : value}</dd>
-    </div>
-  );
 }
 
 function formatDate(value: string): string {

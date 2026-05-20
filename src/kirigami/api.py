@@ -246,11 +246,17 @@ def _parse_topic_input(value: str) -> int:
     if not parts or parts[0] != "t":
         raise HTTPException(status_code=400, detail="URL must be a discuss.python.org topic URL.")
 
-    for part in reversed(parts[1:]):
-        if part.isdecimal():
-            topic_id = int(part)
-            if topic_id > 0:
-                return topic_id
+    if parts[1].isdecimal():
+        topic_id_part = parts[1]
+    elif len(parts) > 2:
+        topic_id_part = parts[2]
+    else:
+        topic_id_part = ""
+
+    if topic_id_part.isdecimal():
+        topic_id = int(topic_id_part)
+        if topic_id > 0:
+            return topic_id
 
     raise HTTPException(status_code=400, detail="Topic URL did not include a topic ID.")
 

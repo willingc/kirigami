@@ -11,7 +11,6 @@ import json
 import time
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
-from datetime import datetime
 
 
 @dataclass
@@ -235,7 +234,7 @@ class DiscourseAPI:
         
         elif format == 'md':
             with open(filename, 'w', encoding='utf-8') as f:
-                f.write(f"# Discourse Topic Posts\n\n")
+                f.write("# Discourse Topic Posts\n\n")
                 for post in posts:
                     f.write(f"## Post #{post.post_number} by {post.username}\n\n")
                     f.write(f"**Created:** {post.created_at}  \n")
@@ -269,7 +268,7 @@ def main():
         
         # Display summary
         print(f"\n{'='*60}")
-        print(f"SUMMARY")
+        print("SUMMARY")
         print(f"{'='*60}")
         print(f"Total posts fetched: {len(posts)}")
         
@@ -282,19 +281,19 @@ def main():
             print(f"Users: {', '.join(sorted(users))}")
         
         # Save to files
-        print(f"\nSaving posts to files...")
+        print("\nSaving posts to files...")
         api.save_posts_to_file(posts, f"topic_{TOPIC_ID}_posts.json", "json")
         api.save_posts_to_file(posts, f"topic_{TOPIC_ID}_posts.txt", "txt")
         api.save_posts_to_file(posts, f"topic_{TOPIC_ID}_posts.md", "md")
         
-        print(f"Files saved:")
+        print("Files saved:")
         print(f"  - topic_{TOPIC_ID}_posts.json")
         print(f"  - topic_{TOPIC_ID}_posts.txt")
         print(f"  - topic_{TOPIC_ID}_posts.md")
         
         # Display first few posts
         print(f"\n{'='*60}")
-        print(f"FIRST FEW POSTS")
+        print("FIRST FEW POSTS")
         print(f"{'='*60}")
         
         for i, post in enumerate(posts[:3]):

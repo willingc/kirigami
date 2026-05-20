@@ -9,7 +9,7 @@ It provides comprehensive analytics including user engagement, temporal patterns
 import json
 import re
 from collections import Counter, defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List, Any, Tuple
 from dataclasses import dataclass
 import statistics
@@ -171,7 +171,6 @@ class DiscourseAnalyzer:
         
         # Filter out zeros for meaningful statistics
         non_zero_replies = [r for r in reply_counts if r > 0]
-        non_zero_reads = [r for r in read_counts if r > 0]
         non_zero_scores = [s for s in scores if s > 0]
         
         engagement = {
@@ -238,14 +237,14 @@ class DiscourseAnalyzer:
         print("=" * 80)
         
         # Basic Stats
-        print(f"\n📊 BASIC STATISTICS")
+        print("\n📊 BASIC STATISTICS")
         print(f"   Total Posts: {s.total_posts:,}")
         print(f"   Unique Users: {s.unique_users}")
         print(f"   Date Range: {s.date_range}")
         print(f"   Average Post Length: {s.avg_post_length:.1f} characters")
         
         # Engagement Stats
-        print(f"\n🎯 ENGAGEMENT METRICS")
+        print("\n🎯 ENGAGEMENT METRICS")
         eng = s.engagement_stats
         print(f"   Total Replies: {eng['total_replies']:,}")
         print(f"   Total Reads: {eng['total_reads']:,}")
@@ -257,13 +256,13 @@ class DiscourseAnalyzer:
         print(f"   Max Reads on Single Post: {eng['max_reads']:,}")
         
         # User Activity
-        print(f"\n👥 MOST ACTIVE USERS")
+        print("\n👥 MOST ACTIVE USERS")
         for i, (username, count) in enumerate(s.most_active_users[:5], 1):
             percentage = (count / s.total_posts) * 100
             print(f"   {i}. {username}: {count} posts ({percentage:.1f}%)")
         
         # Posting Timeline
-        print(f"\n📅 POSTING TIMELINE")
+        print("\n📅 POSTING TIMELINE")
         if s.posting_timeline:
             sorted_timeline = sorted(s.posting_timeline.items())
             print(f"   First Post: {sorted_timeline[0][0]} ({sorted_timeline[0][1]} posts)")
@@ -271,18 +270,18 @@ class DiscourseAnalyzer:
             
             # Show days with most activity
             top_days = sorted(s.posting_timeline.items(), key=lambda x: x[1], reverse=True)[:3]
-            print(f"   Most Active Days:")
+            print("   Most Active Days:")
             for date, count in top_days:
                 print(f"     {date}: {count} posts")
         
         # Content Themes
-        print(f"\n🏷️  CONTENT THEMES (Top Keywords)")
+        print("\n🏷️  CONTENT THEMES (Top Keywords)")
         for i, (keyword, count) in enumerate(s.content_themes[:10], 1):
             print(f"   {i:2d}. {keyword}: {count} mentions")
         
         # Detailed Timeline (if reasonable size)
         if len(s.posting_timeline) <= 14:
-            print(f"\n📈 DAILY POSTING ACTIVITY")
+            print("\n📈 DAILY POSTING ACTIVITY")
             for date, count in sorted(s.posting_timeline.items()):
                 bar = "█" * min(count, 50)  # Visual bar, max 50 chars
                 print(f"   {date}: {bar} ({count})")
@@ -302,7 +301,7 @@ class DiscourseAnalyzer:
             self.print_summary()
             
             # Additional detailed sections
-            print(f"\n\n" + "=" * 80)
+            print("\n\n" + "=" * 80)
             print("DETAILED USER BREAKDOWN")
             print("=" * 80)
             
@@ -326,14 +325,14 @@ class DiscourseAnalyzer:
             
             # Full timeline
             if self.summary.posting_timeline:
-                print(f"\n\n" + "=" * 80)
+                print("\n\n" + "=" * 80)
                 print("COMPLETE POSTING TIMELINE")
                 print("=" * 80)
                 for date, count in sorted(self.summary.posting_timeline.items()):
                     print(f"{date}: {count} posts")
             
             # Content themes
-            print(f"\n\n" + "=" * 80)
+            print("\n\n" + "=" * 80)
             print("COMPLETE KEYWORD ANALYSIS")
             print("=" * 80)
             for keyword, count in self.summary.content_themes:
@@ -413,7 +412,7 @@ def main():
         # Generate insights
         insights = analyzer.get_engagement_insights()
         if insights:
-            print(f"\n💡 KEY INSIGHTS")
+            print("\n💡 KEY INSIGHTS")
             for insight in insights:
                 print(f"   • {insight}")
         

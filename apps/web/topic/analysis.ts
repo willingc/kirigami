@@ -93,8 +93,10 @@ export function analyzeConversation(posts: TopicPost[]): ConversationAnalysis {
       estimatedReadMinutes: Math.max(
         1,
         Math.round(
-          posts.reduce((total, post) => total + wordCount(textByPost.get(post.post_number) ?? ""), 0) /
-            WORDS_PER_MINUTE,
+          posts.reduce(
+            (total, post) => total + wordCount(textByPost.get(post.post_number) ?? ""),
+            0,
+          ) / WORDS_PER_MINUTE,
         ),
       ),
       firstPostAt: posts[0]?.created_at ?? "",
@@ -133,7 +135,10 @@ export function cookedHtml(post: TopicPost): string {
 
 export function postUrl(sourceUrl: string, postNumber: number): string;
 export function postUrl(postNumber: number): string;
-export function postUrl(sourceUrlOrPostNumber: string | number, postNumber?: number): string {
+export function postUrl(
+  sourceUrlOrPostNumber: string | number,
+  postNumber?: number,
+): string {
   if (typeof sourceUrlOrPostNumber === "string" && typeof postNumber === "number") {
     return `${sourceUrlOrPostNumber.replace(/\/$/, "")}/${postNumber}`;
   }
@@ -158,16 +163,19 @@ function buildSignals(
   posts: TopicPost[],
   textByPost: Map<number, string>,
 ): Record<SignalCategory, Signal[]> {
-  const signals = emptySignalCounts<Signal[]>(
-    () => [],
-  ) as Record<SignalCategory, Signal[]>;
+  const signals = emptySignalCounts<Signal[]>(() => []) as Record<
+    SignalCategory,
+    Signal[]
+  >;
 
   for (const post of posts) {
     const text = textByPost.get(post.post_number) ?? "";
     const lowerText = text.toLowerCase();
 
     for (const category of SIGNAL_CATEGORIES) {
-      const matchedTerms = KEYWORDS[category].filter((term) => lowerText.includes(term));
+      const matchedTerms = KEYWORDS[category].filter((term) =>
+        lowerText.includes(term),
+      );
       if (matchedTerms.length === 0) {
         continue;
       }
@@ -223,10 +231,16 @@ function buildAuthors(
         signalCounts: countSignals(signals, postNumbers),
       };
     })
-    .sort((left, right) => right.posts - left.posts || left.username.localeCompare(right.username));
+    .sort(
+      (left, right) =>
+        right.posts - left.posts || left.username.localeCompare(right.username),
+    );
 }
 
-function buildPhases(posts: TopicPost[], signals: Record<SignalCategory, Signal[]>): Phase[] {
+function buildPhases(
+  posts: TopicPost[],
+  signals: Record<SignalCategory, Signal[]>,
+): Phase[] {
   if (posts.length === 0) {
     return [];
   }
@@ -289,7 +303,10 @@ function phaseRanges(posts: TopicPost[]): [string, TopicPost[]][] {
   return populatedRanges;
 }
 
-function topQuoteTargets(posts: TopicPost[], quoteCounts: Map<number, number>): QuoteTarget[] {
+function topQuoteTargets(
+  posts: TopicPost[],
+  quoteCounts: Map<number, number>,
+): QuoteTarget[] {
   const byNumber = new Map(posts.map((post) => [post.post_number, post]));
 
   return [...quoteCounts.entries()]
@@ -322,7 +339,9 @@ function countSignals(
 ): Record<SignalCategory, number> {
   const counts = emptySignalCounts(() => 0);
   for (const category of SIGNAL_CATEGORIES) {
-    counts[category] = signals[category].filter((signal) => postNumbers.has(signal.postNumber)).length;
+    counts[category] = signals[category].filter((signal) =>
+      postNumbers.has(signal.postNumber),
+    ).length;
   }
   return counts;
 }
@@ -338,7 +357,10 @@ function emptySignalCounts<T>(factory: () => T): Record<SignalCategory, T> {
 
 function excerptAround(text: string, term: string): string {
   const normalizedText = text.replace(/\s+/g, " ").trim();
-  const sentences = normalizedText.match(/[^.!?]+(?:[.!?]+|$)/g)?.map((sentence) => sentence.trim()).filter(Boolean);
+  const sentences = normalizedText
+    .match(/[^.!?]+(?:[.!?]+|$)/g)
+    ?.map((sentence) => sentence.trim())
+    .filter(Boolean);
 
   if (!sentences || sentences.length === 0) {
     return normalizedText;

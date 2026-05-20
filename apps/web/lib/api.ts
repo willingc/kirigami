@@ -12,7 +12,10 @@ export function apiBaseUrl() {
 }
 
 export function clientApiBaseUrl() {
-  return (process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_PUBLIC_API_BASE_URL).replace(/\/$/, "");
+  return (process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_PUBLIC_API_BASE_URL).replace(
+    /\/$/,
+    "",
+  );
 }
 
 export async function fetchApi<T>(path: string): Promise<ApiResult<T>> {

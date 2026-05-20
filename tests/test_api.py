@@ -55,9 +55,9 @@ def test_cors_allows_caddy_lan_https_origin() -> None:
     assert response.headers["access-control-allow-origin"] == "https://192.168.1.20"
 
 
-def _topic() -> TopicPosts:
+def _topic(topic_id: int = 123) -> TopicPosts:
     return TopicPosts(
-        topic_id=123,
+        topic_id=topic_id,
         title="Example topic",
         slug="example-topic",
         posts_count=1,
@@ -97,19 +97,31 @@ def test_topic_by_id_summarizes_fetched_topic(monkeypatch: pytest.MonkeyPatch) -
     assert payload["posts"][0]["post_number"] == 1
 
 
-def test_topic_resolve_accepts_topic_url(monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize(
+    "topic_url",
+    [
+        "https://discuss.python.org/t/pep-766-handling-multiple-indexes-index-priority/71589/7",
+        "https://discuss.python.org/t/pep-766-handling-multiple-indexes-index-priority/71589/7/",
+        "https://discuss.python.org/t/pep-766-handling-multiple-indexes-index-priority/71589/",
+        "https://discuss.python.org/t/pep-766-handling-multiple-indexes-index-priority/71589",
+    ],
+)
+def test_topic_resolve_accepts_topic_url(
+    topic_url: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     def fake_fetch_topic_posts(topic_id: int, **_kwargs: object) -> TopicPosts:
-        assert topic_id == 123
-        return _topic()
+        assert topic_id == 71589
+        return _topic(topic_id=topic_id)
 
     monkeypatch.setattr(api_module, "fetch_topic_posts", fake_fetch_topic_posts)
     client = TestClient(app)
 
-    response = client.get("/api/topics/resolve?input=https://discuss.python.org/t/example-topic/123")
+    response = client.get("/api/topics/resolve", params={"input": topic_url})
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["topic"]["topic_id"] == 123
+    assert payload["topic"]["topic_id"] == 71589
     assert payload["topic"]["title"] == "Example topic"
 
 
