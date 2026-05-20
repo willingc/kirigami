@@ -17,4 +17,6 @@ nav:
     - Color legend: diagrams.md
     - Overview: diagram-overview.md
     - Author and flow: diagram-author-flow.md
-  - Research: researchers.md
+  - Research:
+    - Researchers: researchers.md
+    - Research signals: research-signals.md
