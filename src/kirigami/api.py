@@ -35,10 +35,7 @@ from .discourse.people import (
 )
 from .discourse.resolve import resolve_pep_thread
 from .pep import PepMetadata, fetch_pep_metadata
-
-TOPIC_LIST_CACHE_TTL_SECONDS = 300
-_topic_list_cache: dict[str, dict[str, Any]] = {}
-
+from .store import API_CACHE_TTL_SECONDS, KirigamiStore
 
 def create_app() -> FastAPI:
     """Create the FastAPI application."""
@@ -101,8 +98,14 @@ def create_app() -> FastAPI:
         topic_id: int,
         limit: int = Query(default=12, ge=1, le=100),
     ) -> dict[str, Any]:
+        settings = load_discourse_settings()
         try:
-            topic = fetch_topic_posts(topic_id, batch_delay_s=0)
+            topic = fetch_topic_posts(
+                topic_id,
+                base_url=settings.base_url,
+                batch_delay_s=0,
+                cache_dir=settings.cache_dir,
+            )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except httpx.HTTPStatusError as exc:
@@ -127,8 +130,9 @@ def create_app() -> FastAPI:
         pep: int,
         limit: int = Query(default=12, ge=1, le=100),
     ) -> dict[str, Any]:
+        settings = load_discourse_settings()
         try:
-            refs = resolve_pep_thread(pep)
+            refs = resolve_pep_thread(pep, base_url=settings.base_url, cache_dir=settings.cache_dir)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except httpx.HTTPError as exc:
@@ -146,16 +150,16 @@ def create_app() -> FastAPI:
 
 def _cached_topic_list(kind: str, *, limit: int) -> dict[str, Any]:
     settings = load_discourse_settings()
+    store = KirigamiStore.from_cache_dir(settings.cache_dir)
     cache_key = f"{settings.base_url}:{kind}:{limit}"
-    now = time.monotonic()
-    cached = _topic_list_cache.get(cache_key)
-    if cached and now - float(cached["cached_monotonic"]) < TOPIC_LIST_CACHE_TTL_SECONDS:
-        payload = dict(cached["payload"])
+    cached = store.get_api_cache(cache_key)
+    if cached is not None:
+        payload = dict(cached)
         payload["cached"] = True
         return payload
 
     try:
-        payload = _fetch_topic_list(kind, limit=limit, settings=settings)
+        payload = _fetch_topic_list(kind, limit=limit, settings=settings, store=store)
     except httpx.HTTPStatusError as exc:
         raise HTTPException(
             status_code=exc.response.status_code,
@@ -167,11 +171,8 @@ def _cached_topic_list(kind: str, *, limit: int) -> dict[str, Any]:
     cached_at = _utc_now()
     payload["cached"] = False
     payload["cached_at"] = cached_at
-    payload["expires_at"] = _utc_from_timestamp(time.time() + TOPIC_LIST_CACHE_TTL_SECONDS)
-    _topic_list_cache[cache_key] = {
-        "cached_monotonic": now,
-        "payload": dict(payload),
-    }
+    payload["expires_at"] = _utc_from_timestamp(time.time() + API_CACHE_TTL_SECONDS)
+    store.set_api_cache(cache_key, dict(payload))
     return payload
 
 
@@ -180,12 +181,11 @@ def _fetch_topic_list(
     *,
     limit: int,
     settings: DiscourseSettings,
+    store: KirigamiStore,
 ) -> dict[str, Any]:
     path = "/latest.json" if kind == "recent" else "/new.json"
     with create_httpx_discourse_client(settings) as client:
-        response = client.get(path, params={"per_page": limit})
-        response.raise_for_status()
-        payload = response.json()
+        payload = store.get_discourse_json(client, path, params={"per_page": limit})
     PeopleCache(settings.cache_dir / "people.sqlite").upsert_from_discourse_payload(payload)
 
     topics = payload.get("topic_list", {}).get("topics", [])
@@ -357,6 +357,13 @@ def _reader_document(
     ]
     document["role_matches"] = [match.to_dict() for match in role_matches]
     document["analysis_warnings"] = warnings
+    KirigamiStore.from_cache_dir(settings.cache_dir).upsert_topic_document(
+        topic_id=topic.topic_id,
+        schema_version=int(document.get("schema_version") or 0),
+        source_last_posted_at=topic.last_posted_at,
+        enrichment_fingerprint=_document_enrichment_fingerprint(document),
+        document=document,
+    )
     return document
 
 
@@ -369,7 +376,7 @@ def _load_pep_metadata(
     if pep is None:
         return None
     try:
-        return fetch_pep_metadata(int(pep), cache_dir=settings.cache_dir.parent / "peps")
+        return fetch_pep_metadata(int(pep), cache_dir=settings.cache_dir)
     except (httpx.HTTPError, ValueError, OSError) as exc:
         warnings.append(f"Could not fetch PEP {pep} metadata: {exc}")
         return None
@@ -402,6 +409,12 @@ def _refresh_people_profiles_enabled() -> bool:
         "true",
         "yes",
     }
+
+
+def _document_enrichment_fingerprint(document: dict[str, Any]) -> str:
+    pep = document.get("pep_metadata") or {}
+    participants = document.get("participants") or []
+    return f"pep:{pep.get('fetched_at', '')}:participants:{len(participants)}"
 
 
 def _package_version() -> str:

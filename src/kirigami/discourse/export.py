@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
 import httpx
+
+from kirigami.store import KirigamiStore
 
 from .fetch import DiscoursePost, TopicPosts, fetch_topic_posts
 from .resolve import DISCOURSE_BASE_URL, TopicRef, resolve_pep_thread
@@ -148,6 +151,22 @@ def export_topic(
     if "md" in formats:
         markdown_path = topic_to_markdown(topic, directory / f"{stem}.md")
 
+    store = _default_store()
+    if json_path is not None:
+        store.upsert_topic_export(
+            topic_id=topic.topic_id,
+            export_format="json",
+            basename=stem,
+            content=json_path.read_text(encoding="utf-8"),
+        )
+    if markdown_path is not None:
+        store.upsert_topic_export(
+            topic_id=topic.topic_id,
+            export_format="md",
+            basename=stem,
+            content=markdown_path.read_text(encoding="utf-8"),
+        )
+
     return ExportedTopic(
         topic_id=topic.topic_id,
         json_path=json_path,
@@ -227,3 +246,8 @@ def _default_basename(topic: TopicPosts, *, pep: int | None) -> str:
             return topic.slug
         return f"{prefix}-{topic.slug}"
     return f"topic-{topic.topic_id}-{topic.slug}"
+
+
+def _default_store() -> KirigamiStore:
+    cache_dir = Path(os.environ.get("KIRIGAMI_DISCOURSE_CACHE_DIR", ".cache/kirigami/discourse"))
+    return KirigamiStore.from_cache_dir(cache_dir)

@@ -19,6 +19,10 @@ npm install --prefix apps/web
 description = "Launch the FastAPI backend and Next.js development server."
 run = "./scripts/dev-web.sh"
 
+[tasks.migrate]
+description = "Apply Kirigami SQLite store migrations."
+run = 'uv run --python "$KIRIGAMI_PYTHON_VERSION" --extra web python -m kirigami migrate'
+
 [tasks.deploy]
 description = "Build and launch Caddy, the FastAPI backend, and the Next.js production server with Docker Compose."
 run = "./scripts/deploy-web.sh"

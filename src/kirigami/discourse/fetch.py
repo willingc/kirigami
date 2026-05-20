@@ -14,6 +14,7 @@ import httpx
 from .client import _clean_secret, load_dotenv_file
 from .people import PeopleCache
 from .resolve import DISCOURSE_BASE_URL
+from ..store import KirigamiStore
 
 BATCH_SIZE = 20
 DEFAULT_BATCH_DELAY_S = 0.5
@@ -114,8 +115,8 @@ def fetch_topic_posts(
         client: Optional HTTP client (for tests).
         include_raw: Request raw markdown bodies from the API.
         batch_delay_s: Pause between paginated post batch requests.
-        cache_dir: When set, read/write a JSON cache keyed by topic ID and
-            ``last_posted_at`` so unchanged topics are not re-downloaded.
+        cache_dir: When set, read/write the SQLite cache and apply a 5-minute
+            Discourse HTTP cache to every network request.
 
     Returns:
         Topic metadata and posts sorted by post number.
@@ -128,7 +129,8 @@ def fetch_topic_posts(
         client = create_discourse_client(base_url=base_url, load_env=False)
 
     try:
-        topic_data = _get_json(client, f"/t/{topic_id}.json")
+        store = KirigamiStore.from_cache_dir(cache_dir) if cache_dir is not None else None
+        topic_data = _get_json(client, f"/t/{topic_id}.json", store=store)
         last_posted_at = str(topic_data.get("last_posted_at") or "")
         if cache_dir is not None:
             PeopleCache(Path(cache_dir) / "people.sqlite").upsert_from_discourse_payload(
@@ -136,8 +138,8 @@ def fetch_topic_posts(
                 topic_id=topic_id,
             )
 
-        if cache_dir is not None:
-            cached = _read_cache(Path(cache_dir), topic_id, last_posted_at)
+        if store is not None:
+            cached = _read_cache(store, topic_id, last_posted_at)
             if cached is not None:
                 return cached
 
@@ -148,11 +150,12 @@ def fetch_topic_posts(
             include_raw=include_raw,
             batch_delay_s=batch_delay_s,
             cache_dir=Path(cache_dir) if cache_dir is not None else None,
+            store=store,
         )
         result = _build_topic_posts(topic_data, posts)
 
-        if cache_dir is not None:
-            _write_cache(Path(cache_dir), result)
+        if store is not None:
+            store.upsert_topic(result, raw=topic_data)
 
         return result
     finally:
@@ -163,7 +166,17 @@ def _get_json(
     client: httpx.Client,
     path: str,
     params: dict[str, Any] | list[tuple[str, Any]] | None = None,
+    *,
+    store: KirigamiStore | None = None,
 ) -> dict[str, Any]:
+    if store is not None:
+        return store.get_discourse_json(
+            client,
+            path,
+            params=params,
+            max_retries=MAX_RETRIES,
+            retry_status_codes=RETRY_STATUS_CODES,
+        )
     last_response: httpx.Response | None = None
     for attempt in range(MAX_RETRIES):
         response = client.get(path, params=params)
@@ -189,6 +202,7 @@ def _collect_posts(
     include_raw: bool,
     batch_delay_s: float,
     cache_dir: Path | None,
+    store: KirigamiStore | None,
 ) -> list[DiscoursePost]:
     post_stream = topic_data.get("post_stream") or {}
     stream_ids: list[int] = list(post_stream.get("stream") or [])
@@ -209,7 +223,12 @@ def _collect_posts(
         if include_raw:
             params.append(("include_raw", 1))
 
-        batch_data = _get_json(client, f"/t/{topic_id}/posts.json", params=params)
+        batch_data = _get_json(
+            client,
+            f"/t/{topic_id}/posts.json",
+            params=params,
+            store=store,
+        )
         # Batch payloads can include user records on real Discourse instances.
         # Keep those display names for later PEP role matching.
         if cache_dir is not None:
@@ -290,15 +309,9 @@ def _cache_path(cache_dir: Path, topic_id: int) -> Path:
     return cache_dir / f"topic_{topic_id}.json"
 
 
-def _read_cache(cache_dir: Path, topic_id: int, last_posted_at: str) -> TopicPosts | None:
-    path = _cache_path(cache_dir, topic_id)
-    if not path.is_file():
-        return None
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
-    if payload.get("last_posted_at") != last_posted_at:
+def _read_cache(store: KirigamiStore, topic_id: int, last_posted_at: str) -> TopicPosts | None:
+    payload = store.topic_payload(topic_id, last_posted_at)
+    if payload is None:
         return None
     posts = tuple(DiscoursePost(**item) for item in payload.get("posts", []))
     return TopicPosts(

@@ -2,6 +2,7 @@
 import click
 
 from .ingest import get_categories, load_config, load_query_auth
+from .store import migrate_default_store
 
 
 @click.command()
@@ -23,6 +24,17 @@ def pretty():
 def raw():
     """Display raw messages."""
     print('Display raw messages.')
+
+
+@click.command()
+def migrate():
+    """Apply SQLite store migrations."""
+    applied = migrate_default_store()
+    if applied:
+        for migration in applied:
+            click.echo(f"Applied {migration.number:04d}_{migration.name}")
+    else:
+        click.echo("No migrations to apply.")
 
 
 @click.command()

@@ -8,6 +8,7 @@ from pathlib import Path
 import httpx
 import pytest
 
+from kirigami.store import KirigamiStore
 from kirigami.discourse.export import (
     SCHEMA_VERSION,
     export_pep_discussion,
@@ -23,6 +24,11 @@ from kirigami.discourse.fetch import DiscoursePost, TopicPosts
 from kirigami.discourse.resolve import DISCOURSE_BASE_URL
 
 JSONDATA = Path(__file__).parent / "jsondata"
+
+
+@pytest.fixture(autouse=True)
+def isolated_export_store(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("KIRIGAMI_DB_PATH", str(tmp_path / "kirigami.sqlite"))
 
 
 def _sample_topic() -> TopicPosts:
@@ -105,6 +111,11 @@ class TestExportTopic:
         assert "## Post 1 — @brettcannon" in markdown
         assert "Opening post for PEP 999." in markdown
         assert "**In reply to:** post 1" in markdown
+
+        store = KirigamiStore(tmp_path / "kirigami.sqlite")
+        with store.connect() as connection:
+            count = connection.execute("select count(*) from topic_exports").fetchone()[0]
+        assert count == 2
 
     def test_render_markdown_includes_metadata(self) -> None:
         text = render_markdown(_sample_topic())

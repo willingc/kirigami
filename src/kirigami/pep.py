@@ -13,10 +13,12 @@ from typing import Any
 
 import httpx
 
+from kirigami.store import DISCOURSE_HTTP_CACHE_TTL_SECONDS, KirigamiStore
+
 PEP_BASE_URL = "https://peps.python.org"
 ACTIVE_STATUSES = {"Draft", "Deferred", "Provisional"}
-ACTIVE_CACHE_TTL_SECONDS = 24 * 60 * 60
-FINAL_CACHE_TTL_SECONDS = 30 * 24 * 60 * 60
+ACTIVE_CACHE_TTL_SECONDS = DISCOURSE_HTTP_CACHE_TTL_SECONDS
+FINAL_CACHE_TTL_SECONDS = DISCOURSE_HTTP_CACHE_TTL_SECONDS
 
 
 @dataclass(frozen=True, slots=True)
@@ -97,9 +99,16 @@ def fetch_pep_metadata(
 
     cache_root = Path(cache_dir) if cache_dir is not None else None
     if cache_root is not None:
-        cached = _read_cache(cache_root, pep)
-        if cached is not None:
-            return cached
+        store = KirigamiStore.from_cache_dir(cache_root)
+        cached_payload = store.pep_payload(pep, ttl_seconds=ACTIVE_CACHE_TTL_SECONDS)
+        if cached_payload is not None:
+            return _metadata_from_payload(cached_payload)
+        legacy_cached = _read_cache(cache_root, pep)
+        if legacy_cached is not None:
+            store.upsert_pep_metadata(legacy_cached)
+            return legacy_cached
+    else:
+        store = None
 
     url = pep_url(pep)
     owns_client = client is None
@@ -114,7 +123,9 @@ def fetch_pep_metadata(
         if owns_client:
             client.close()
 
-    if cache_root is not None:
+    if store is not None:
+        store.upsert_pep_metadata(metadata)
+    if cache_root is not None and cache_root.name == "peps":
         _write_cache(cache_root, metadata)
 
     return metadata

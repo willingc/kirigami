@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import httpx
+
+from kirigami.store import KirigamiStore
 
 DISCOURSE_BASE_URL = "https://discuss.python.org"
 
@@ -39,6 +42,7 @@ def resolve_pep_thread(
     base_url: str = DISCOURSE_BASE_URL,
     client: httpx.Client | None = None,
     pep_category_ids: frozenset[int] | None = None,
+    cache_dir: Path | str | None = None,
 ) -> list[TopicRef]:
     """
     Find Discourse topics on discuss.python.org that discuss a PEP.
@@ -52,6 +56,8 @@ def resolve_pep_thread(
         client: Optional HTTP client (for tests). When omitted, a short-lived
             client is created for the request.
         pep_category_ids: Category IDs treated as PEP discussion areas.
+        cache_dir: Optional Kirigami cache directory for the 5-minute Discourse
+            HTTP cache.
 
     Returns:
         Matching topics sorted by relevance (highest score first).
@@ -65,9 +71,16 @@ def resolve_pep_thread(
         client = httpx.Client(base_url=base_url.rstrip("/"), timeout=30.0)
 
     try:
-        response = client.get("/search.json", params={"q": f"PEP {pep}"})
-        response.raise_for_status()
-        payload = response.json()
+        if cache_dir is None:
+            response = client.get("/search.json", params={"q": f"PEP {pep}"})
+            response.raise_for_status()
+            payload = response.json()
+        else:
+            payload = KirigamiStore.from_cache_dir(cache_dir).get_discourse_json(
+                client,
+                "/search.json",
+                params={"q": f"PEP {pep}"},
+            )
     finally:
         if owns_client:
             client.close()
