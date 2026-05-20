@@ -1,0 +1,1 @@
+"""Kirigami SQLite migrations."""

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import httpx
 import pytest
 
@@ -12,6 +14,12 @@ from fastapi.testclient import TestClient
 import kirigami.api as api_module
 from kirigami.api import app
 from kirigami.discourse.fetch import DiscoursePost, TopicPosts
+
+
+@pytest.fixture(autouse=True)
+def isolated_api_cache(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("KIRIGAMI_DISCOURSE_CACHE_DIR", str(tmp_path / "discourse"))
+    monkeypatch.delenv("KIRIGAMI_DB_PATH", raising=False)
 
 
 def test_health_endpoint() -> None:
@@ -177,7 +185,6 @@ def test_recent_topics_are_cached(monkeypatch: pytest.MonkeyPatch) -> None:
         "create_httpx_discourse_client",
         lambda _settings: FakeDiscourseClient(),
     )
-    api_module._topic_list_cache.clear()
     client = TestClient(app)
 
     first_response = client.get("/api/topics/recent?limit=2")
@@ -227,7 +234,6 @@ def test_new_topics_use_new_discourse_feed(monkeypatch: pytest.MonkeyPatch) -> N
         "create_httpx_discourse_client",
         lambda _settings: FakeDiscourseClient(),
     )
-    api_module._topic_list_cache.clear()
     client = TestClient(app)
 
     response = client.get("/api/topics/new")

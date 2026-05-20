@@ -8,6 +8,7 @@ from pathlib import Path
 import httpx
 import pytest
 
+import kirigami.store as store_module
 from kirigami.discourse.fetch import (
     DISCOURSE_BASE_URL,
     TopicPosts,
@@ -106,9 +107,15 @@ class TestFetchTopicPosts:
         assert len(handler.batch_requests) == 1  # type: ignore[attr-defined]
         assert second.posts[0].raw == "Post 1"
 
-    def test_cache_invalidated_when_last_posted_at_changes(self, tmp_path: Path) -> None:
+    def test_cache_rechecks_topic_after_discourse_http_ttl(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
         topic_payload = _load_fixture("topic_small.json")
         call_count = {"n": 0}
+        clock = {"now": 1_000.0}
+        monkeypatch.setattr(store_module.time, "time", lambda: clock["now"])
 
         def handler(request: httpx.Request) -> httpx.Response:
             if request.url.path == "/t/100.json":
@@ -151,8 +158,13 @@ class TestFetchTopicPosts:
         assert len(first.posts) == 3
 
         second = fetch_topic_posts(100, client=client, batch_delay_s=0, cache_dir=tmp_path)
-        assert len(second.posts) == 4
-        assert second.posts[-1].raw == "New reply."
+        assert len(second.posts) == 3
+        assert call_count["n"] == 1
+
+        clock["now"] += store_module.DISCOURSE_HTTP_CACHE_TTL_SECONDS + 1
+        third = fetch_topic_posts(100, client=client, batch_delay_s=0, cache_dir=tmp_path)
+        assert len(third.posts) == 4
+        assert third.posts[-1].raw == "New reply."
 
     def test_http_error_propagates(self) -> None:
         def handler(request: httpx.Request) -> httpx.Response:

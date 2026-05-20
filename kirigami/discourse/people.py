@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import re
-import sqlite3
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -13,8 +12,9 @@ from typing import Any, Iterable
 import httpx
 
 from kirigami.pep import PepMetadata, PepPerson
+from kirigami.store import DISCOURSE_HTTP_CACHE_TTL_SECONDS, KirigamiStore
 
-PROFILE_TTL_SECONDS = 30 * 24 * 60 * 60
+PROFILE_TTL_SECONDS = DISCOURSE_HTTP_CACHE_TTL_SECONDS
 MIN_CONFIRMED_MATCH = 0.65
 
 
@@ -57,8 +57,7 @@ class PeopleCache:
 
     def __init__(self, path: Path | str) -> None:
         self.path = Path(path)
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._init_db()
+        self.store = KirigamiStore.from_people_cache_path(self.path)
 
     def upsert_from_discourse_payload(
         self,
@@ -79,110 +78,18 @@ class PeopleCache:
         topic_id: int | None = None,
         raw: dict[str, Any] | None = None,
     ) -> None:
-        now = int(time.time())
-        with sqlite3.connect(self.path) as connection:
-            existing = connection.execute(
-                "select seen_in_topic_ids from profiles where username_key = ?",
-                (_username_key(profile.username),),
-            ).fetchone()
-            seen_topic_ids = set()
-            if existing and existing[0]:
-                seen_topic_ids.update(int(value) for value in json.loads(existing[0]))
-            if topic_id is not None:
-                seen_topic_ids.add(topic_id)
-            connection.execute(
-                """
-                insert into profiles (
-                    username_key, username, name, user_id, avatar_template,
-                    primary_group_name, trust_level, admin, moderator,
-                    seen_in_topic_ids, raw_json, fetched_epoch
-                )
-                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                on conflict(username_key) do update set
-                    username = excluded.username,
-                    name = coalesce(excluded.name, profiles.name),
-                    user_id = coalesce(excluded.user_id, profiles.user_id),
-                    avatar_template = coalesce(excluded.avatar_template, profiles.avatar_template),
-                    primary_group_name = coalesce(excluded.primary_group_name, profiles.primary_group_name),
-                    trust_level = coalesce(excluded.trust_level, profiles.trust_level),
-                    admin = excluded.admin,
-                    moderator = excluded.moderator,
-                    seen_in_topic_ids = excluded.seen_in_topic_ids,
-                    raw_json = excluded.raw_json,
-                    fetched_epoch = excluded.fetched_epoch
-                """,
-                (
-                    _username_key(profile.username),
-                    profile.username,
-                    profile.name,
-                    profile.user_id,
-                    profile.avatar_template,
-                    profile.primary_group_name,
-                    profile.trust_level,
-                    int(profile.admin),
-                    int(profile.moderator),
-                    json.dumps(sorted(seen_topic_ids)),
-                    json.dumps(raw or profile.to_dict(), ensure_ascii=False),
-                    now,
-                ),
-            )
+        self.store.upsert_profile(profile, topic_id=topic_id, raw=raw)
 
     def get_profile(self, username: str) -> DiscourseUserProfile | None:
-        with sqlite3.connect(self.path) as connection:
-            row = connection.execute(
-                """
-                select username, name, user_id, avatar_template, primary_group_name,
-                       trust_level, admin, moderator, fetched_epoch
-                from profiles where username_key = ?
-                """,
-                (_username_key(username),),
-            ).fetchone()
+        row = self.store.profile_row(username)
         return _profile_from_row(row)
 
     def all_profiles(self) -> list[DiscourseUserProfile]:
-        with sqlite3.connect(self.path) as connection:
-            rows = connection.execute(
-                """
-                select username, name, user_id, avatar_template, primary_group_name,
-                       trust_level, admin, moderator, fetched_epoch
-                from profiles
-                """
-            ).fetchall()
+        rows = self.store.profile_rows()
         return [profile for row in rows if (profile := _profile_from_row(row))]
 
     def stale_usernames(self, usernames: Iterable[str]) -> list[str]:
-        now = time.time()
-        stale: list[str] = []
-        with sqlite3.connect(self.path) as connection:
-            for username in usernames:
-                row = connection.execute(
-                    "select fetched_epoch from profiles where username_key = ?",
-                    (_username_key(username),),
-                ).fetchone()
-                if row is None or now - float(row[0] or 0) > PROFILE_TTL_SECONDS:
-                    stale.append(username)
-        return stale
-
-    def _init_db(self) -> None:
-        with sqlite3.connect(self.path) as connection:
-            connection.execute(
-                """
-                create table if not exists profiles (
-                    username_key text primary key,
-                    username text not null,
-                    name text,
-                    user_id integer,
-                    avatar_template text,
-                    primary_group_name text,
-                    trust_level integer,
-                    admin integer not null default 0,
-                    moderator integer not null default 0,
-                    seen_in_topic_ids text not null default '[]',
-                    raw_json text not null default '{}',
-                    fetched_epoch real not null
-                )
-                """
-            )
+        return self.store.stale_usernames(usernames, ttl_seconds=PROFILE_TTL_SECONDS)
 
 
 def fetch_and_cache_profiles(
@@ -195,10 +102,8 @@ def fetch_and_cache_profiles(
     warnings: list[str] = []
     for username in cache.stale_usernames(sorted(set(usernames), key=str.casefold)):
         try:
-            response = client.get(f"/u/{username}.json")
-            response.raise_for_status()
-            payload = response.json()
-        except (httpx.HTTPError, ValueError) as exc:
+            payload = cache.store.get_discourse_json(client, f"/u/{username}.json")
+        except (httpx.HTTPError, TypeError, ValueError) as exc:
             warnings.append(f"Could not refresh Discourse profile for @{username}: {exc}")
             continue
 
