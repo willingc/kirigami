@@ -254,6 +254,10 @@ def test_topic_document_includes_cooked_html(monkeypatch: pytest.MonkeyPatch) ->
     assert payload["topic"]["topic_id"] == 123
     assert payload["posts"][0]["raw"] == "Hello world"
     assert payload["posts"][0]["cooked"] == "<p>Hello world</p>"
+    assert payload["posts"][0]["author_roles"] == []
+    assert payload["pep_metadata"] is None
+    assert payload["role_matches"] == []
+    assert payload["analysis_warnings"] == []
 
 
 def test_topic_document_retries_public_fetch_after_auth_403(

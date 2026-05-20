@@ -12,17 +12,17 @@ export const metadata: Metadata = {
 const goals = [
   {
     title: "Find the shape of the discussion",
-    body: "Long threads are hard because the important movement is distributed across dozens or hundreds of replies. Kirigami turns the thread into a map: opening context, likely convergence, contested points, questions, progress, phases, authors, and source posts.",
-    color: "border-t-kiri-accent bg-[#e2f3fb]",
+    body: "Long threads are hard because the important movement is distributed across dozens or hundreds of replies. Kirigami turns the thread into a map: opening context, agreement evidence, disagreement evidence, questions, progress, phases, authors, and source posts.",
+    color: "border-t-[#07804f] bg-[#dff7e8]",
   },
   {
     title: "Separate evidence from conclusion",
     body: "The reader does not claim that a thread reached consensus. It identifies posts whose language looks like evidence for agreement, disagreement, uncertainty, or progress, then keeps the original source one click away.",
-    color: "border-t-kiri-contest bg-kiri-contest-soft",
+    color: "border-t-[#c7352b] bg-[#ffe0dc]",
   },
   {
     title: "Make review faster without hiding text",
-    body: "The goal is compression for navigation, not replacement. A reader should be able to skim the generated structure, jump to the posts that matter, and verify the interpretation in the original discussion.",
+    body: "The goal is compression for navigation, not replacement. Issue cards list every source post they use, and colored evidence controls filter the review list without removing access to the full source.",
     color: "border-t-kiri-progress bg-kiri-progress-soft",
   },
 ];
@@ -34,7 +34,7 @@ const process = [
   },
   {
     title: "2. Detect discourse signals",
-    body: "Each post is scanned for phrase families that usually mark agreement, disagreement, questions, or progress. A post can appear in more than one category because real discussion posts often do more than one thing.",
+    body: "Each post is scanned for phrase families that usually mark agreement, disagreement, questions, progress, concessions, revisions, or resolution. A post can appear in more than one category because real discussion posts often do more than one thing.",
   },
   {
     title: "3. Extract the local evidence",
@@ -46,26 +46,32 @@ const process = [
   },
   {
     title: "5. Build the reading map",
-    body: "The analysis groups posts by author, counts quoted targets, estimates reading time, and divides the thread into phases using post order and large gaps in time.",
+    body: "The analysis groups posts by author, counts quoted targets, estimates reading time, groups evidence into issue cards, and divides the thread into phases using post order and large gaps in time.",
+  },
+  {
+    title: "6. Keep source review filterable",
+    body: "Issue cards show the complete set of source posts for that issue. Clicking a colored bar segment or matching colored chip filters those posts to agreement, disagreement, questions, progress, or other signal types; reset returns to the full list.",
   },
 ];
 
 const examples = [
   {
-    label: "Convergence",
-    color: "border-t-kiri-accent bg-[#e2f3fb]",
-    chip: "bg-kiri-accent text-[#fbfffc]",
+    label: "Agreement",
+    color: "border-t-[#07804f] bg-[#dff7e8]",
+    chip: "bg-[#07804f] text-[#fbfffc]",
     trigger: "agree, consensus, support, makes sense, +1, no objection",
     example: "I agree with this direction; the revised wording makes sense.",
-    result: "The post is surfaced under “Where it seems to converge.”",
+    result:
+      "The post is surfaced as agreement evidence and can be found through green filters.",
   },
   {
-    label: "Contested",
-    color: "border-t-kiri-contest bg-kiri-contest-soft",
-    chip: "bg-kiri-contest text-[#fbfffc]",
+    label: "Disagreement",
+    color: "border-t-[#c7352b] bg-[#ffe0dc]",
+    chip: "bg-[#c7352b] text-[#fbfffc]",
     trigger: "concern, objection, risk, not convinced, blocker, however, but",
     example: "I am not convinced this handles the compatibility risk.",
-    result: "The post is surfaced under “What remains contested.”",
+    result:
+      "The post is surfaced as disagreement evidence and can be found through red filters.",
   },
   {
     label: "Question",
@@ -103,6 +109,10 @@ const nlpDetails = [
     body: "Posts are grouped by author to show participation patterns. The thread is also split into phases using order plus time gaps, which helps distinguish the initial burst from later follow-up.",
   },
   {
+    title: "Issue-level evidence filters",
+    body: "The dashboard groups related evidence into issue cards. Each card lists all source posts it uses, and the colored signal bar plus matching chips filter that card's source list by evidence type.",
+  },
+  {
     title: "Reading-time estimation",
     body: "The plain text word count is divided by 220 words per minute. This gives a practical sense of source-reading cost before someone opens the full thread.",
   },
@@ -126,14 +136,14 @@ const nonGoals = [
 
 const signalMap = [
   {
-    label: "Converges",
+    label: "Agreement",
     value: "agree",
-    className: "border-kiri-accent bg-[#e2f3fb] text-kiri-accent",
+    className: "border-[#07804f] bg-[#dff7e8] text-[#05683f]",
   },
   {
-    label: "Contested",
+    label: "Disagreement",
     value: "risk",
-    className: "border-kiri-contest bg-kiri-contest-soft text-kiri-contest",
+    className: "border-[#c7352b] bg-[#ffe0dc] text-[#9f241c]",
   },
   {
     label: "Question",

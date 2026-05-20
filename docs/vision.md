@@ -4,6 +4,12 @@ Kirigami reorganizes and cuts dialogue. This document states the problem, the pr
 
 The primary setting is [discuss.python.org](https://discuss.python.org), especially threads that debate Python Enhancement Proposals (PEPs). The same ideas apply to other long-running Discourse conversations.
 
+## Current product direction
+
+The current implementation is a **source-linked evidence dashboard**, not a generated consensus summary. For PEP threads it enriches Discourse posts with metadata from `peps.python.org`, tags PEP authors/sponsors/delegates when they can be matched to Discourse users, and visualizes deterministic signals for agreement, disagreement, questions, revisions, concessions, and resolution markers. Issue cards keep every source post visible and let readers filter locally by signal type using the colored bar or matching chips.
+
+Generated whole-thread summaries, author-position prose, multi-thread PEP bundles, and official consensus detection remain roadmap items. The source post remains the authority.
+
 ---
 
 ## 1. The problem with long-running Discourse threads

@@ -25,8 +25,11 @@ export default async function TopicPage({
       </header>
       <div className="pt-[73px] max-sm:pt-[69px]">
         <ConversationWorkbench
+          analysisWarnings={document.analysis_warnings}
           meta={topicMetaFromDocument(document)}
+          pepMetadata={document.pep_metadata}
           posts={document.posts}
+          roleMatches={document.role_matches}
         />
       </div>
     </>

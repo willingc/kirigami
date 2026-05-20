@@ -206,6 +206,7 @@ def _normalize_post(post: DiscoursePost) -> dict[str, Any]:
         "id": post.id,
         "post_number": post.post_number,
         "username": post.username,
+        "author_name": post.author_name,
         "created_at": post.created_at,
         "updated_at": post.updated_at,
         "raw": post.raw,

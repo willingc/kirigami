@@ -12,6 +12,7 @@ from typing import Any
 import httpx
 
 from .client import _clean_secret, load_dotenv_file
+from .people import PeopleCache
 from .resolve import DISCOURSE_BASE_URL
 
 BATCH_SIZE = 20
@@ -38,6 +39,7 @@ class DiscoursePost:
     reply_to_post_number: int | None = None
     user_title: str | None = None
     trust_level: int | None = None
+    author_name: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -128,6 +130,11 @@ def fetch_topic_posts(
     try:
         topic_data = _get_json(client, f"/t/{topic_id}.json")
         last_posted_at = str(topic_data.get("last_posted_at") or "")
+        if cache_dir is not None:
+            PeopleCache(Path(cache_dir) / "people.sqlite").upsert_from_discourse_payload(
+                topic_data,
+                topic_id=topic_id,
+            )
 
         if cache_dir is not None:
             cached = _read_cache(Path(cache_dir), topic_id, last_posted_at)
@@ -140,6 +147,7 @@ def fetch_topic_posts(
             topic_data,
             include_raw=include_raw,
             batch_delay_s=batch_delay_s,
+            cache_dir=Path(cache_dir) if cache_dir is not None else None,
         )
         result = _build_topic_posts(topic_data, posts)
 
@@ -180,14 +188,16 @@ def _collect_posts(
     *,
     include_raw: bool,
     batch_delay_s: float,
+    cache_dir: Path | None,
 ) -> list[DiscoursePost]:
     post_stream = topic_data.get("post_stream") or {}
     stream_ids: list[int] = list(post_stream.get("stream") or [])
     first_batch: list[dict[str, Any]] = list(post_stream.get("posts") or [])
 
     posts_by_id: dict[int, DiscoursePost] = {}
+    users_by_username = _users_by_username(topic_data)
     for post_data in first_batch:
-        post = _parse_post(post_data)
+        post = _parse_post(post_data, users_by_username=users_by_username)
         posts_by_id[post.id] = post
 
     if not stream_ids:
@@ -200,9 +210,16 @@ def _collect_posts(
             params.append(("include_raw", 1))
 
         batch_data = _get_json(client, f"/t/{topic_id}/posts.json", params=params)
+        # Batch payloads can include user records on real Discourse instances.
+        # Keep those display names for later PEP role matching.
+        if cache_dir is not None:
+            PeopleCache(cache_dir / "people.sqlite").upsert_from_discourse_payload(
+                batch_data,
+                topic_id=topic_id,
+            )
         batch_posts = (batch_data.get("post_stream") or {}).get("posts") or []
         for post_data in batch_posts:
-            post = _parse_post(post_data)
+            post = _parse_post(post_data, users_by_username=users_by_username)
             posts_by_id[post.id] = post
 
         if batch_delay_s > 0:
@@ -214,12 +231,25 @@ def _collect_posts(
     return posts
 
 
-def _parse_post(post_data: dict[str, Any]) -> DiscoursePost:
+def _parse_post(
+    post_data: dict[str, Any],
+    *,
+    users_by_username: dict[str, dict[str, Any]] | None = None,
+) -> DiscoursePost:
     reply_to = post_data.get("reply_to_post_number")
+    username = str(post_data["username"])
+    profile = (users_by_username or {}).get(username.casefold(), {})
     return DiscoursePost(
         id=int(post_data["id"]),
         post_number=int(post_data["post_number"]),
-        username=str(post_data["username"]),
+        username=username,
+        author_name=(
+            str(post_data.get("name")).strip()
+            if post_data.get("name")
+            else str(profile.get("name")).strip()
+            if profile.get("name")
+            else None
+        ),
         created_at=str(post_data["created_at"]),
         updated_at=str(post_data["updated_at"]),
         raw=str(post_data.get("raw") or ""),
@@ -232,6 +262,17 @@ def _parse_post(post_data: dict[str, Any]) -> DiscoursePost:
         user_title=post_data.get("user_title"),
         trust_level=post_data.get("trust_level"),
     )
+
+
+def _users_by_username(topic_data: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    users: dict[str, dict[str, Any]] = {}
+    for item in topic_data.get("users") or []:
+        if isinstance(item, dict) and item.get("username"):
+            users[str(item["username"]).casefold()] = item
+    for item in (topic_data.get("details") or {}).get("participants") or []:
+        if isinstance(item, dict) and item.get("username"):
+            users[str(item["username"]).casefold()] = item
+    return users
 
 
 def _build_topic_posts(topic_data: dict[str, Any], posts: list[DiscoursePost]) -> TopicPosts:

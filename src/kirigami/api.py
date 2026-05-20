@@ -25,7 +25,16 @@ from .discourse.client import (
 )
 from .discourse.export import normalize_topic
 from .discourse.fetch import DiscoursePost, fetch_topic_posts
+from .discourse.people import (
+    DiscourseUserProfile,
+    PeopleCache,
+    fetch_and_cache_profiles,
+    load_aliases,
+    match_pep_people_to_discourse_users,
+    roles_for_username,
+)
 from .discourse.resolve import resolve_pep_thread
+from .pep import PepMetadata, fetch_pep_metadata
 
 TOPIC_LIST_CACHE_TTL_SECONDS = 300
 _topic_list_cache: dict[str, dict[str, Any]] = {}
@@ -177,6 +186,7 @@ def _fetch_topic_list(
         response = client.get(path, params={"per_page": limit})
         response.raise_for_status()
         payload = response.json()
+    PeopleCache(settings.cache_dir / "people.sqlite").upsert_from_discourse_payload(payload)
 
     topics = payload.get("topic_list", {}).get("topics", [])
     return {
@@ -263,6 +273,7 @@ def _parse_topic_input(value: str) -> int:
 
 def _fetch_topic_document(topic_id: int) -> dict[str, Any]:
     settings = load_discourse_settings()
+    warnings: list[str] = []
     try:
         # Build the pydiscourse client from the same credentials when auth is
         # configured, while the existing fetcher handles full post pagination.
@@ -296,19 +307,101 @@ def _fetch_topic_document(topic_id: int) -> dict[str, Any]:
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-    return _reader_document(topic)
+    return _reader_document(topic, settings=settings, warnings=warnings)
 
 
-def _reader_document(topic: Any) -> dict[str, Any]:
+def _reader_document(
+    topic: Any,
+    *,
+    settings: DiscourseSettings,
+    warnings: list[str],
+) -> dict[str, Any]:
     document = normalize_topic(topic)
+    pep_metadata = _load_pep_metadata(document.get("pep"), settings=settings, warnings=warnings)
+    people_cache = PeopleCache(settings.cache_dir / "people.sqlite")
+    for profile in _profiles_from_posts(topic.posts):
+        people_cache.upsert_profile(profile, topic_id=topic.topic_id)
+
+    if _refresh_people_profiles_enabled():
+        with create_httpx_discourse_client(settings, timeout=8.0) as client:
+            warnings.extend(
+                fetch_and_cache_profiles(
+                    [post.username for post in topic.posts],
+                    client=client,
+                    cache=people_cache,
+                )
+            )
+
+    profiles = people_cache.all_profiles()
+    aliases = load_aliases(settings.cache_dir / "person-aliases.json")
+    role_matches = match_pep_people_to_discourse_users(
+        pep_metadata,
+        profiles,
+        aliases=aliases,
+    )
     document["posts"] = [
         {
             **post,
             "cooked": source_post.cooked,
+            "author_roles": roles_for_username(role_matches, source_post.username),
         }
         for post, source_post in zip(document["posts"], topic.posts, strict=True)
     ]
+    document["pep_metadata"] = pep_metadata.to_dict() if pep_metadata else None
+    document["participants"] = [
+        profile.to_dict()
+        for profile in sorted(
+            _profiles_for_topic_posts(profiles, topic.posts),
+            key=lambda profile: profile.username.casefold(),
+        )
+    ]
+    document["role_matches"] = [match.to_dict() for match in role_matches]
+    document["analysis_warnings"] = warnings
     return document
+
+
+def _load_pep_metadata(
+    pep: Any,
+    *,
+    settings: DiscourseSettings,
+    warnings: list[str],
+) -> PepMetadata | None:
+    if pep is None:
+        return None
+    try:
+        return fetch_pep_metadata(int(pep), cache_dir=settings.cache_dir.parent / "peps")
+    except (httpx.HTTPError, ValueError, OSError) as exc:
+        warnings.append(f"Could not fetch PEP {pep} metadata: {exc}")
+        return None
+
+
+def _profiles_from_posts(posts: tuple[DiscoursePost, ...]) -> list[DiscourseUserProfile]:
+    profiles: list[DiscourseUserProfile] = []
+    for post in posts:
+        profiles.append(
+            DiscourseUserProfile(
+                username=post.username,
+                name=post.author_name,
+                trust_level=post.trust_level,
+            )
+        )
+    return profiles
+
+
+def _profiles_for_topic_posts(
+    profiles: list[DiscourseUserProfile],
+    posts: tuple[DiscoursePost, ...],
+) -> list[DiscourseUserProfile]:
+    usernames = {post.username.casefold() for post in posts}
+    return [profile for profile in profiles if profile.username.casefold() in usernames]
+
+
+def _refresh_people_profiles_enabled() -> bool:
+    return os.environ.get("KIRIGAMI_REFRESH_PEOPLE_PROFILES", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
 
 
 def _package_version() -> str:

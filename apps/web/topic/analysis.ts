@@ -1,7 +1,10 @@
 import type {
   AuthorSummary,
   ConversationAnalysis,
+  DiscussionIssue,
   Phase,
+  PepRoleTag,
+  PositionEvent,
   QuoteTarget,
   Signal,
   SignalCategory,
@@ -14,7 +17,11 @@ const SIGNAL_CATEGORIES: SignalCategory[] = [
   "disagreement",
   "question",
   "progress",
+  "concession",
+  "revision",
+  "resolution",
 ];
+const GENERIC_ISSUE_TERMS = new Set(["PEP"]);
 
 const KEYWORDS: Record<SignalCategory, string[]> = {
   agreement: [
@@ -73,6 +80,36 @@ const KEYWORDS: Record<SignalCategory, string[]> = {
     "accept",
     "conclusion",
   ],
+  concession: [
+    "changed my mind",
+    "i'm convinced",
+    "i am convinced",
+    "fair point",
+    "i was wrong",
+    "i now think",
+    "i concede",
+    "you're right",
+    "you are right",
+  ],
+  revision: [
+    "updated the pep",
+    "revised the pep",
+    "revised the proposal",
+    "adjusted the proposal",
+    "change the pep",
+    "drop this",
+    "remove this",
+    "narrow the scope",
+  ],
+  resolution: [
+    "accepted",
+    "rejected",
+    "resolved by",
+    "resolution",
+    "final decision",
+    "pep is final",
+    "no longer open",
+  ],
 };
 
 export function analyzeConversation(posts: TopicPost[]): ConversationAnalysis {
@@ -106,6 +143,8 @@ export function analyzeConversation(posts: TopicPost[]): ConversationAnalysis {
     phases: buildPhases(posts, signals),
     signals,
     topQuoteTargets: topQuoteTargets(posts, quoteCounts),
+    issues: buildIssues(posts, signals),
+    positionEvents: buildPositionEvents(posts, signals),
   };
 }
 
@@ -229,12 +268,79 @@ function buildAuthors(
           0,
         ),
         signalCounts: countSignals(signals, postNumbers),
+        roles: mergedRoles(authorPosts),
+        postNumbers: authorPosts.map((post) => post.post_number),
       };
     })
     .sort(
       (left, right) =>
         right.posts - left.posts || left.username.localeCompare(right.username),
     );
+}
+
+function buildIssues(
+  posts: TopicPost[],
+  signals: Record<SignalCategory, Signal[]>,
+): DiscussionIssue[] {
+  const postsByNumber = new Map(posts.map((post) => [post.post_number, post]));
+  const issueBuckets = new Map<string, Signal[]>();
+  for (const category of SIGNAL_CATEGORIES) {
+    for (const signal of signals[category]) {
+      const key = issueKey(signal);
+      issueBuckets.set(key, [...(issueBuckets.get(key) ?? []), signal]);
+    }
+  }
+
+  return [...issueBuckets.entries()]
+    .map(([label, issueSignals], index) => {
+      const postNumbers = [
+        ...new Set(issueSignals.map((signal) => signal.postNumber)),
+      ].sort((left, right) => left - right);
+      const issuePosts = postNumbers
+        .map((postNumber) => postsByNumber.get(postNumber))
+        .filter((post): post is TopicPost => Boolean(post));
+      const signalCounts = emptySignalCounts(() => 0);
+      for (const signal of issueSignals) {
+        signalCounts[signal.category] += 1;
+      }
+      return {
+        id: `issue-${index + 1}`,
+        label,
+        status: issueStatus(issueSignals, issuePosts),
+        confidence: Math.min(1, 0.35 + issueSignals.length * 0.08),
+        postNumbers,
+        signalCounts,
+        roleActivity: mergedRoles(issuePosts),
+        lastActivityAt: issuePosts.at(-1)?.created_at ?? "",
+      };
+    })
+    .filter((issue) => issue.postNumbers.length > 0)
+    .sort((left, right) => {
+      const rightSignals = totalSignals(right.signalCounts);
+      const leftSignals = totalSignals(left.signalCounts);
+      return rightSignals - leftSignals || left.postNumbers[0] - right.postNumbers[0];
+    })
+    .slice(0, 8);
+}
+
+function buildPositionEvents(
+  posts: TopicPost[],
+  signals: Record<SignalCategory, Signal[]>,
+): PositionEvent[] {
+  const postsByNumber = new Map(posts.map((post) => [post.post_number, post]));
+  return SIGNAL_CATEGORIES.flatMap((category) =>
+    signals[category].map((signal) => {
+      const post = postsByNumber.get(signal.postNumber);
+      return {
+        postNumber: signal.postNumber,
+        username: signal.username,
+        createdAt: signal.createdAt,
+        category,
+        evidence: signal.evidence,
+        roles: post?.author_roles ?? [],
+      };
+    }),
+  ).sort((left, right) => left.postNumber - right.postNumber);
 }
 
 function buildPhases(
@@ -352,7 +458,187 @@ function emptySignalCounts<T>(factory: () => T): Record<SignalCategory, T> {
     disagreement: factory(),
     question: factory(),
     progress: factory(),
+    concession: factory(),
+    revision: factory(),
+    resolution: factory(),
   };
+}
+
+function issueKey(signal: Signal): string {
+  const evidence = cleanedEvidence(signal.evidence);
+  const normalized = evidence.toLowerCase();
+  const phrase = ISSUE_PHRASES.find(({ terms }) =>
+    terms.some((term) => normalized.includes(term)),
+  );
+  if (phrase) {
+    return phrase.label;
+  }
+
+  const technicalTerms = evidence
+    .match(
+      /\b(?:[a-z][a-z0-9_-]*\.(?:json|toml)|[a-z0-9_-]+-[a-z0-9_-]+|[a-z][a-z0-9_-]*_[a-z0-9_-]*|[A-Z]{2,}|PyPI|RISC-V|BLAS|Windows|macOS|Linux)\b/g,
+    )
+    ?.filter((term) => !GENERIC_ISSUE_TERMS.has(term));
+  if (technicalTerms && technicalTerms.length > 0) {
+    return [...new Set(technicalTerms)]
+      .slice(0, 2)
+      .map((term) => humanizeIssueTerm(term))
+      .join(" and ");
+  }
+
+  return `Discussion around post #${signal.postNumber}`;
+}
+
+function issueStatus(signals: Signal[], posts: TopicPost[]): DiscussionIssue["status"] {
+  if (signals.length === 0 || posts.length === 0) {
+    return "unknown";
+  }
+  const lastPostTime = new Date(posts.at(-1)?.created_at ?? "").getTime();
+  const latestResolution = latestPostNumber(signals, [
+    "resolution",
+    "revision",
+    "concession",
+  ]);
+  const latestConcern = latestPostNumber(signals, ["disagreement", "question"]);
+  if (latestResolution > 0 && latestResolution >= latestConcern) {
+    return signals.some(
+      (signal) =>
+        signal.category === "question" && signal.postNumber > latestResolution,
+    )
+      ? "work_in_progress"
+      : "resolved";
+  }
+  if (signals.filter((signal) => signal.category === "disagreement").length >= 2) {
+    return "in_contention";
+  }
+  if (Date.now() - lastPostTime > 30 * 24 * 60 * 60 * 1000) {
+    return "stale";
+  }
+  if (signals.length >= 2) {
+    return "in_discussion";
+  }
+  return "unknown";
+}
+
+function latestPostNumber(signals: Signal[], categories: SignalCategory[]): number {
+  return Math.max(
+    0,
+    ...signals
+      .filter((signal) => categories.includes(signal.category))
+      .map((signal) => signal.postNumber),
+  );
+}
+
+function mergedRoles(posts: TopicPost[]): PepRoleTag[] {
+  const byKey = new Map<string, PepRoleTag>();
+  for (const post of posts) {
+    for (const role of post.author_roles ?? []) {
+      byKey.set(`${role.role}:${role.pep_name}`, role);
+    }
+  }
+  return [...byKey.values()].sort((left, right) => left.role.localeCompare(right.role));
+}
+
+function totalSignals(counts: Record<SignalCategory, number>): number {
+  return SIGNAL_CATEGORIES.reduce((total, category) => total + counts[category], 0);
+}
+
+const ISSUE_PHRASES: { label: string; terms: string[] }[] = [
+  {
+    label: "Variant metadata files",
+    terms: ["variant.json", "variants.json", "index-level metadata", "metadata file"],
+  },
+  {
+    label: "Null variant label",
+    terms: ["null variant", "null label", "label being used for an empty set"],
+  },
+  {
+    label: "Variant labels and wheel filenames",
+    terms: [
+      "variant label",
+      "wheel filename",
+      "filename",
+      "path length",
+      "windows paths",
+    ],
+  },
+  {
+    label: "Variant ordering and selection",
+    terms: [
+      "variant ordering",
+      "ordering/selecting",
+      "ordered list",
+      "per-package ordering",
+    ],
+  },
+  {
+    label: "Multiple indexes and registries",
+    terms: [
+      "multiple indices",
+      "multiple indexes",
+      "two registries",
+      "registry merging",
+      "pypi and piwheels",
+    ],
+  },
+  {
+    label: "Lock files and pylock.toml",
+    terms: ["pylock.toml", "lockfile", "lock file", "lockfiles"],
+  },
+  {
+    label: "Platform tags versus variants",
+    terms: ["platform tags", "platform tag", "variant markers", "environment markers"],
+  },
+  {
+    label: "Variant properties, namespaces, features, and values",
+    terms: [
+      "variant properties",
+      "namespace",
+      "feature",
+      "compatible values",
+      "property mapping",
+    ],
+  },
+  {
+    label: "Local builds and future build PEP",
+    terms: ["locally-built wheels", "build one", "future pep", "pep 517 build"],
+  },
+  {
+    label: "Package format scope",
+    terms: [
+      "package format",
+      "wheel file itself",
+      "split pep 817",
+      "series of smaller peps",
+    ],
+  },
+  {
+    label: "Validation rules and regular expressions",
+    terms: [
+      "regex",
+      "regular expression",
+      "validate",
+      "rejected from ever getting uploaded",
+    ],
+  },
+];
+
+function cleanedEvidence(evidence: string): string {
+  return evidence
+    .replace(/\b[A-Z][\p{L}.'-]+(?:\s+[A-Z][\p{L}.'-]+){0,3}:\s*/gu, "")
+    .replace(/\bgithub\.com\/python\/peps\b.*?\bUTC\b/gi, " ")
+    .replace(/\bopened\s+\d{1,2}:\d{2}[AP]M\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function humanizeIssueTerm(term: string): string {
+  if (term === "PyPI" || term === "BLAS" || term === "RISC-V") {
+    return term;
+  }
+  return term
+    .replace(/[._-]+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function excerptAround(text: string, term: string): string {

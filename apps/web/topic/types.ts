@@ -2,16 +2,72 @@ export type TopicPost = {
   id: number;
   post_number: number;
   username: string;
+  author_name: string | null;
   created_at: string;
   updated_at: string;
   raw: string;
   cooked: string;
+  reply_to_post_number: number | null;
   reply_count: number;
   quote_count: number;
   reads: number;
   score: number;
   user_title: string | null;
   trust_level: number | null;
+  author_roles: PepRoleTag[];
+};
+
+export type PepPerson = {
+  name: string;
+  email: string | null;
+};
+
+export type PepMetadata = {
+  number: number;
+  title: string;
+  url: string;
+  status: string | null;
+  type: string | null;
+  topic: string | null;
+  created: string | null;
+  python_version: string | null;
+  discussions_to: string | null;
+  post_history: string[];
+  resolution: string | null;
+  authors: PepPerson[];
+  sponsors: PepPerson[];
+  delegates: PepPerson[];
+  fetched_at: string;
+};
+
+export type ParticipantProfile = {
+  username: string;
+  name: string | null;
+  user_id: number | null;
+  avatar_template: string | null;
+  primary_group_name: string | null;
+  trust_level: number | null;
+  admin: boolean;
+  moderator: boolean;
+  fetched_at: string | null;
+};
+
+export type RoleMatch = {
+  pep_name: string;
+  role: "author" | "sponsor" | "delegate";
+  username: string | null;
+  display_name: string | null;
+  confidence: number;
+  method: string;
+  confirmed: boolean;
+};
+
+export type PepRoleTag = {
+  role: "author" | "sponsor" | "delegate";
+  pep_name: string;
+  confidence: number;
+  method: string;
+  confirmed: boolean;
 };
 
 export type TopicMeta = {
@@ -33,9 +89,20 @@ export type TopicDocument = {
     last_posted_at: string;
   };
   posts: TopicPost[];
+  pep_metadata: PepMetadata | null;
+  participants: ParticipantProfile[];
+  role_matches: RoleMatch[];
+  analysis_warnings: string[];
 };
 
-export type SignalCategory = "agreement" | "disagreement" | "question" | "progress";
+export type SignalCategory =
+  | "agreement"
+  | "disagreement"
+  | "question"
+  | "progress"
+  | "concession"
+  | "revision"
+  | "resolution";
 
 export type Signal = {
   category: SignalCategory;
@@ -59,6 +126,34 @@ export type Phase = {
   signalCounts: Record<SignalCategory, number>;
 };
 
+export type IssueStatus =
+  | "resolved"
+  | "work_in_progress"
+  | "in_contention"
+  | "in_discussion"
+  | "stale"
+  | "unknown";
+
+export type DiscussionIssue = {
+  id: string;
+  label: string;
+  status: IssueStatus;
+  confidence: number;
+  postNumbers: number[];
+  signalCounts: Record<SignalCategory, number>;
+  roleActivity: PepRoleTag[];
+  lastActivityAt: string;
+};
+
+export type PositionEvent = {
+  postNumber: number;
+  username: string;
+  createdAt: string;
+  category: SignalCategory;
+  evidence: string;
+  roles: PepRoleTag[];
+};
+
 export type AuthorSummary = {
   username: string;
   posts: number;
@@ -68,6 +163,8 @@ export type AuthorSummary = {
   replies: number;
   quotesReceived: number;
   signalCounts: Record<SignalCategory, number>;
+  roles: PepRoleTag[];
+  postNumbers: number[];
 };
 
 export type QuoteTarget = {
@@ -91,4 +188,6 @@ export type ConversationAnalysis = {
   phases: Phase[];
   signals: Record<SignalCategory, Signal[]>;
   topQuoteTargets: QuoteTarget[];
+  issues: DiscussionIssue[];
+  positionEvents: PositionEvent[];
 };

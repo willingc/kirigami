@@ -25,5 +25,12 @@ export function topicMetaFromDocument(document: TopicDocument): TopicMeta {
 }
 
 function sortPosts(posts: TopicPost[]): TopicPost[] {
-  return [...posts].sort((left, right) => left.post_number - right.post_number);
+  return [...posts]
+    .map((post) => ({
+      ...post,
+      author_name: post.author_name ?? null,
+      reply_to_post_number: post.reply_to_post_number ?? null,
+      author_roles: post.author_roles ?? [],
+    }))
+    .sort((left, right) => left.post_number - right.post_number);
 }
