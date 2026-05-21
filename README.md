@@ -8,10 +8,10 @@ frontend and a FastAPI backend.
 
 The web template is split into two pieces:
 
-- `src/kirigami/api.py` exposes the Python backend.
+- `kirigami/api.py` exposes the Python backend.
 - `apps/web` contains the Next.js App Router frontend.
 
-Install the Python web extra and the frontend dependencies:
+Install the Python and Next.js dependencies:
 
 ```bash
 mise run setup
@@ -34,6 +34,15 @@ Run the production-style Docker Compose stack behind Caddy:
 ```bash
 mise run deploy
 ```
+
+Or deploy to FastAPI Cloud (builds the Next.js static export and bundles it
+into the FastAPI app, so frontend and backend ship together behind one URL):
+
+```bash
+./deploy.sh
+```
+
+See [FASTAPI.md](FASTAPI.md) for FastAPI Cloud deploy details.
 
 Run the Python and frontend checks:
 

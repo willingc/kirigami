@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import html
 import os
+import pathlib
 import re
 import time
 from collections import Counter
@@ -16,6 +17,8 @@ from urllib.parse import urlparse
 import httpx
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from .discourse.client import (
     DiscourseSettings,
@@ -53,13 +56,14 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    @app.get("/")
-    def root() -> dict[str, str]:
-        return {
-            "service": "kirigami-api",
-            "docs": "/docs",
-            "health": "/api/health",
-        }
+    if not STATIC_DIR.exists():
+        @app.get("/")
+        def root() -> dict[str, str]:
+            return {
+                "service": "kirigami-api",
+                "docs": "/docs",
+                "health": "/api/health",
+            }
 
     @app.get("/api/health")
     def health() -> dict[str, str]:
@@ -145,7 +149,44 @@ def create_app() -> FastAPI:
         result["resolved"] = asdict(refs[0])
         return result
 
+    _mount_static_frontend(app)
     return app
+
+
+STATIC_DIR = pathlib.Path(__file__).parent / "static"
+TOPIC_FALLBACK_HTML = STATIC_DIR / "topics" / "_" / "index.html"
+
+
+def _mount_static_frontend(app: FastAPI) -> None:
+    """Serve the exported Next.js frontend if it has been built into static/."""
+    if not STATIC_DIR.exists():
+        return
+
+    next_dir = STATIC_DIR / "_next"
+    if next_dir.exists():
+        app.mount("/_next", StaticFiles(directory=str(next_dir)), name="next-assets")
+
+    index_html = STATIC_DIR / "index.html"
+
+    # Override the JSON `/` root with the SPA shell when the frontend is bundled.
+    @app.get("/", include_in_schema=False)
+    def _serve_root() -> FileResponse:
+        return FileResponse(index_html)
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def _serve_static(full_path: str) -> FileResponse:
+        # Topic detail pages share one client-rendered HTML shell.
+        if full_path.startswith("topics/") and TOPIC_FALLBACK_HTML.is_file():
+            return FileResponse(TOPIC_FALLBACK_HTML)
+
+        candidate = (STATIC_DIR / full_path).resolve()
+        if candidate.is_relative_to(STATIC_DIR):
+            if candidate.is_file():
+                return FileResponse(candidate)
+            html_index = candidate / "index.html"
+            if html_index.is_file():
+                return FileResponse(html_index)
+        return FileResponse(index_html)
 
 
 def _cached_topic_list(kind: str, *, limit: int) -> dict[str, Any]:

@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Bundled frontend (built by deploy.sh from apps/web/out)
+/kirigami/static/
+
 # C extensions
 *.so
 

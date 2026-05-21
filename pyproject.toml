@@ -24,7 +24,7 @@ classifiers = [
 dependencies = [
   "click",
   "click-default-group",
-  "fastapi>=0.136",
+  "fastapi[standard]>=0.136",
   "flatten_json",
   "httpx",
   "json-flatten",
@@ -37,14 +37,10 @@ dependencies = [
   "trogon",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
   "pytest>=8.0",
   "ruff>=0.8",
-]
-web = [
-  "fastapi[standard]>=0.136",
-  "uvicorn[standard]>=0.34",
 ]
 
 [project.scripts]
@@ -74,7 +70,13 @@ extend-exclude = ["notebooks"]
 entrypoint = "kirigami.api:app"
 
 [tool.hatch.version]
-path = "src/kirigami/__about__.py"
+path = "kirigami/__about__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["kirigami"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"kirigami/static" = "kirigami/static"
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -101,19 +103,19 @@ dependencies = [
   "mypy>=1.0.0",
 ]
 [tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:src/kirigami tests}"
+check = "mypy --install-types --non-interactive {args:kirigami tests}"
 
 [tool.coverage.run]
 source_pkgs = ["kirigami", "tests"]
 branch = true
 parallel = true
 omit = [
-  "src/kirigami/__about__.py",
+  "kirigami/__about__.py",
 ]
 
 [tool.coverage.paths]
-kirigami = ["src/kirigami", "*/kirigami/src/kirigami"]
-tests = ["tests", "*/kirigami/tests"]
+kirigami = ["kirigami"]
+tests = ["tests"]
 
 [tool.coverage.report]
 exclude_lines = [

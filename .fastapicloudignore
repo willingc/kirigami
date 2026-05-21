@@ -1,0 +1,24 @@
+# Un-ignore the bundled frontend build (gitignored in .gitignore)
+!kirigami/static/
+
+# Exclude anything not needed at runtime in the cloud.
+apps/
+notebooks/
+ideas/
+ruby_discourse/
+docs/
+data/
+scripts/
+tests/
+docker/
+docker-compose.yml
+Caddyfile
+.dockerignore
+flake.nix
+mise.toml
+mkdocs.yml
+Agents.md
+FASTAPI.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+*.ipynb

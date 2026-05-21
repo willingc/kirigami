@@ -1,98 +1,126 @@
 # FastAPI Cloud Deployment
 
-This deploys the FastAPI backend only. FastAPI Cloud does not use this repo's
-Docker, Caddy, or Next.js frontend configuration; host the frontend separately
-and point it at the deployed API URL.
+This deploys both the FastAPI backend and the Next.js frontend together to
+FastAPI Cloud. The Next.js app is statically exported and bundled into the
+Python package as `kirigami/static/`; FastAPI serves those files alongside the
+JSON API, so everything runs same-origin behind one URL.
 
 ## Project Configuration
 
-The repo is configured for FastAPI Cloud with:
+- `.python-version` set to `3.13`.
+- `fastapi[standard]` in the root `pyproject.toml` dependencies so the cloud
+  runtime has the `fastapi` CLI available to launch the app.
+- `[tool.fastapi] entrypoint = "kirigami.api:app"` points the cloud runtime at
+  the FastAPI app exported from `kirigami/api.py`.
+- `[tool.hatch.build.targets.wheel.force-include]` ships the built
+  `kirigami/static/` directory inside the wheel (the dir itself is gitignored
+  since it's a build artifact).
+- `.fastapicloudignore` keeps the build slim: it excludes the Next.js source
+  (`apps/`), notebooks, docs, Docker config, tests, and dev tooling, while
+  re-including `kirigami/static/` (which is gitignored).
 
-- `.python-version` set to `3.13`
-- `fastapi` in the root `pyproject.toml` dependencies so the cloud runtime can
-  import the app
-- `fastapi[standard]` in the `web` optional dependency group for the local CLI
-  and dev server
-- `[tool.fastapi] entrypoint = "kirigami.api:app"`
+## Frontend Static Export
 
-The entrypoint points to the FastAPI app exported from `src/kirigami/api.py`.
-The Docker backend image installs FastAPI directly, so Docker does not depend on
-the optional `web` group.
+`apps/web/next.config.js` is configured with `output: "export"`,
+`trailingSlash: true`, and `images: { unoptimized: true }`.
+
+The topic detail route (`/topics/[topicId]/`) is generated once as a placeholder
+HTML shell with `generateStaticParams: [{ topicId: "_" }]`. At runtime, FastAPI's
+SPA catch-all serves that same shell for any `/topics/<id>/` path, and the
+client component reads the real topic ID from `window.location` and fetches the
+document from the backend.
+
+`apps/web/lib/api.ts` uses `clientApiBaseUrl()` (default `""` = same origin), so
+no `NEXT_PUBLIC_API_BASE_URL` is needed when frontend and backend share an
+origin.
 
 ## Verify Locally
 
 Install dependencies:
 
 ```bash
-mise run setup
+uv sync
 ```
 
-Verify the configured app can be imported:
+Verify the app imports:
 
 ```bash
 uv run python -c "from kirigami.api import app; print(app.title)"
 ```
 
-Optionally run the FastAPI dev server from the configured entrypoint:
+Run the FastAPI dev server:
 
 ```bash
-uv run --extra web fastapi dev
+uv run fastapi dev
 ```
 
-## Environment Variables
-
-Set the Discourse credentials in FastAPI Cloud. Use secrets for API keys:
-
-```bash
-fastapi cloud env set DISCOURSE_BASE_URL "https://discuss.python.org"
-fastapi cloud env set DISCOURSE_USERNAME "your-discourse-username"
-fastapi cloud env set --secret DISCOURSE_API_KEY "your-discourse-api-key"
-fastapi cloud env set --secret DISCOURSE_USER_API_KEY "your-user-api-key"
-```
-
-Set CORS to the frontend origin that will call the API:
+Run the frontend dev server (in another terminal) — useful for editing the
+Next.js app without rebuilding the static bundle:
 
 ```bash
-fastapi cloud env set KIRIGAMI_CORS_ORIGINS "https://your-frontend-domain"
-```
-
-If you need a custom cache directory in the cloud runtime, set:
-
-```bash
-fastapi cloud env set KIRIGAMI_DISCOURSE_CACHE_DIR "/tmp/kirigami/discourse"
+cd apps/web && npm run dev
 ```
 
 ## Deploy
 
-FastAPI Cloud's migration checklist expects `fastapi[standard]` to be available
-for CLI workflows. This repo keeps the heavier `standard` extra in the `web`
-optional dependency group, while keeping plain `fastapi` in root dependencies so
-the cloud runtime can import `kirigami.api:app`.
-
-Before deploying, sync the API extra locally so the `fastapi` CLI is available:
+`deploy.sh` builds the frontend, copies the static export into the Python
+package, and triggers the cloud deploy:
 
 ```bash
-uv sync --extra web
+./deploy.sh
 ```
 
-Login and deploy from the repository root:
+What it runs:
+
+1. `cd apps/web && npm ci && npm run build` → produces `apps/web/out/`.
+2. `rm -rf kirigami/static && cp -r apps/web/out kirigami/static`.
+3. `uv run fastapi cloud deploy` from the repo root.
+
+On first deploy the CLI links the project to a FastAPI Cloud app
+(`.fastapicloud/cloud.json`). When prompted for "Path to the directory
+containing your app," **leave it empty** — `pyproject.toml` is at the repo root
+and the package is at `kirigami/`, so the deploy root and the runtime cwd are
+both the repo root.
+
+### Continuous deployment
+
+`.github/workflows/fastapicloud-deploy.yml` runs the same build-and-deploy
+pipeline on every push to `main` (and on manual dispatch). It needs two GitHub
+repository secrets:
+
+- `FASTAPI_CLOUD_TOKEN` — a deploy token from FastAPI Cloud
+- `FASTAPI_CLOUD_APP_ID` — the app ID from `.fastapicloud/cloud.json`
+
+## Environment Variables
+
+All Discourse credentials are optional. With nothing set, the backend hits
+`https://discuss.python.org` anonymously and only public topics are reachable.
+Set credentials if you need authenticated endpoints or higher rate limits:
 
 ```bash
-fastapi login
-uv run --extra web fastapi deploy
+uv run fastapi cloud env set DISCOURSE_BASE_URL "https://discuss.python.org"
+uv run fastapi cloud env set DISCOURSE_USERNAME "your-discourse-username"
+uv run fastapi cloud env set --secret DISCOURSE_API_KEY "your-discourse-api-key"
+uv run fastapi cloud env set --secret DISCOURSE_USER_API_KEY "your-user-api-key"
 ```
 
-After deployment, set the frontend's `NEXT_PUBLIC_API_BASE_URL` to the FastAPI
-Cloud app URL.
+`KIRIGAMI_CORS_ORIGINS` only matters if you host the frontend separately. With
+the bundled static deploy, frontend and backend share an origin and CORS is a
+no-op.
+
+If you need a custom cache directory for fetched Discourse data:
+
+```bash
+uv run fastapi cloud env set KIRIGAMI_DISCOURSE_CACHE_DIR "/tmp/kirigami/discourse"
+```
 
 ## Notes
 
-- Do not rely on `docker-compose.yml` for FastAPI Cloud; it builds and runs the
-  Python app directly.
+- The `docker/`, `Caddyfile`, and `docker-compose.yml` files in the repo are
+  for an alternative self-hosted deploy and are unrelated to FastAPI Cloud.
+  `.fastapicloudignore` excludes them from the cloud bundle.
 - Keep `.env` local. Configure production values through FastAPI Cloud
   environment variables.
-- If `fastapi dev` cannot find the app, check `[tool.fastapi]` in
-  `pyproject.toml`.
 
 References:
 

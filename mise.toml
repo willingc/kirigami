@@ -11,7 +11,7 @@ uv = "latest"
 description = "Install Node, uv, Python dependencies, and Next.js dependencies."
 run = """
 mise install node uv
-uv sync --python "$KIRIGAMI_PYTHON_VERSION" --extra dev --extra web
+uv sync --python "$KIRIGAMI_PYTHON_VERSION"
 npm install --prefix apps/web
 """
 
@@ -21,7 +21,7 @@ run = "./scripts/dev-web.sh"
 
 [tasks.migrate]
 description = "Apply Kirigami SQLite store migrations."
-run = 'uv run --python "$KIRIGAMI_PYTHON_VERSION" --extra web python -m kirigami migrate'
+run = 'uv run --python "$KIRIGAMI_PYTHON_VERSION" python -m kirigami migrate'
 
 [tasks.deploy]
 description = "Build and launch Caddy, the FastAPI backend, and the Next.js production server with Docker Compose."
@@ -39,7 +39,7 @@ rm -rf apps/web/.next apps/web/out apps/web/coverage
 [tasks.lint]
 description = "Run Python Ruff checks, frontend formatting, ESLint, and TypeScript checks."
 run = """
-uv run --python "$KIRIGAMI_PYTHON_VERSION" --extra dev ruff check .
+uv run --python "$KIRIGAMI_PYTHON_VERSION" ruff check .
 npm run format:check --prefix apps/web
 npm run lint --prefix apps/web
 npm run typecheck --prefix apps/web
@@ -48,7 +48,7 @@ npm run typecheck --prefix apps/web
 [tasks.test]
 description = "Run backend tests, frontend Vitest tests, and verify the frontend production build."
 run = """
-uv run --python "$KIRIGAMI_PYTHON_VERSION" --extra dev --extra web pytest
+uv run --python "$KIRIGAMI_PYTHON_VERSION" pytest
 npm run test --prefix apps/web
 npm run build --prefix apps/web
 """
