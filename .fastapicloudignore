@@ -4,7 +4,6 @@
 # Exclude anything not needed at runtime in the cloud.
 apps/
 notebooks/
-ideas/
 ruby_discourse/
 docs/
 data/
