@@ -1,0 +1,29 @@
+[project]
+site_name = "kirigami"
+site_url = "https://willingc.github.io/kirigami/"
+repo_url = "https://github.com/willingc/kirigami"
+repo_name = "willingc/kirigami"
+
+nav = [
+  { "Home" = "index.md" },
+  { "Tools" = "tools.md" },
+  { "JSON Tools" = "json_tools.md" },
+  { "Real World" = "realworld.md" },
+  { "Use case" = "usecase.md" },
+  { "Systems Thinking" = "systems_thinking.md" },
+  { "Current state" = "current-state.md" },
+  { "Current NLP" = "nlp-current.md" },
+  { "Vision" = "vision.md" },
+  { "Diagrams" = [
+    { "Color legend" = "diagrams.md" },
+    { "Overview" = "diagram-overview.md" },
+    { "Author and flow" = "diagram-author-flow.md" },
+  ] },
+  { "Research" = [
+    { "Researchers" = "researchers.md" },
+    { "Research signals" = "research-signals.md" },
+  ] },
+]
+
+[project.theme]
+language = "en"

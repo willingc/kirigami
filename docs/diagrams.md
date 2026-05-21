@@ -154,7 +154,7 @@ Commit both the updated `.excalidraw` and `.png` files when diagram content chan
 1. Load `.excalidraw` files from `docs/` in Excalidraw+.
 2. Use **Frames** to group §5 / §6 on the author-flow canvas for cleaner exports.
 3. Keep fill/stroke pairs aligned with the legend above so both diagrams stay visually consistent.
-4. Regenerate PNGs and verify [Overview](diagram-overview.md) and [Author and flow](diagram-author-flow.md) in a local MkDocs build (`mkdocs serve`).
+4. Regenerate PNGs and verify [Overview](diagram-overview.md) and [Author and flow](diagram-author-flow.md) in a local docs build (`mise run docs:serve`).
 
 ---
 

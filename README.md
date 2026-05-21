@@ -44,6 +44,13 @@ mise run deploy:fastapi
 
 See [FASTAPI.md](FASTAPI.md) for FastAPI Cloud deploy details.
 
+Build and preview the documentation site (Zensical):
+
+```bash
+mise run docs:build
+mise run docs:serve
+```
+
 Run the Python and frontend checks:
 
 ```bash
