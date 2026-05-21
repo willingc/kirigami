@@ -51,6 +51,8 @@ mise run docs:build
 mise run docs:serve
 ```
 
+Published at [willingc.github.io/kirigami](https://willingc.github.io/kirigami/) from the `gh-pages` branch on push to `main`.
+
 Run the Python and frontend checks:
 
 ```bash
