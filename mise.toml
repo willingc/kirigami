@@ -15,6 +15,17 @@ uv sync --python "$KIRIGAMI_PYTHON_VERSION"
 npm install --prefix apps/web
 """
 
+[tasks."notebooks:sync"]
+description = "Install Kirigami plus notebook dependencies and register the project Jupyter kernel."
+run = """
+uv sync --python "$KIRIGAMI_PYTHON_VERSION" --group notebooks
+uv run --python "$KIRIGAMI_PYTHON_VERSION" --group notebooks python -m ipykernel install --sys-prefix --name kirigami --display-name "Kirigami (uv)"
+"""
+
+[tasks."notebooks:lab"]
+description = "Start JupyterLab for notebooks/ (run notebooks:sync first)."
+run = 'uv run --python "$KIRIGAMI_PYTHON_VERSION" --group notebooks jupyter lab notebooks/'
+
 [tasks.dev]
 description = "Launch the FastAPI backend and Next.js development server."
 run = "./scripts/dev-web.sh"

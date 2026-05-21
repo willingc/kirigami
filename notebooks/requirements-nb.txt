@@ -1,9 +1,0 @@
-numpy
-scipy
-matplotlib
-pandas
-seaborn
-jupyterlab
-python-dotenv
-httpx
-

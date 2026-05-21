@@ -41,6 +41,18 @@ dev = [
   "pytest>=8.0",
   "ruff>=0.8",
 ]
+notebooks = [
+  "convokit",
+  "ipykernel",
+  "jupyter",
+  "matplotlib>=3.8.4",
+  "nltk",
+  "numpy>=1.26.4",
+  "pandas>=2.2.2",
+  "scipy>=1.13.0",
+  "seaborn>=0.13.2",
+  "spacy>=3.8.14; python_version < '3.14'",
+]
 
 [project.scripts]
 kiri = "kirigami.__main__:cli"
@@ -49,18 +61,6 @@ kiri = "kirigami.__main__:cli"
 Documentation = "https://github.com/willingc/kirigami#readme"
 Issues = "https://github.com/willingc/kirigami/issues"
 Source = "https://github.com/willingc/kirigami"
-
-[tool]
-rye = { dev-dependencies = [
-    "jupyterlab>=4.1.8",
-    "pandas>=2.2.2",
-    "seaborn>=0.13.2",
-    "numpy>=1.26.4",
-    "scipy>=1.13.0",
-    "matplotlib>=3.8.4",
-    "python-dotenv>=1.0.1",
-    "httpx>=0.27.0",
-] }
 
 [tool.ruff]
 extend-exclude = ["notebooks"]
