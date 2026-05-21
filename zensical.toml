@@ -6,9 +6,6 @@ repo_name = "willingc/kirigami"
 
 nav = [
   { "Home" = "index.md" },
-  { "Tools" = "tools.md" },
-  { "JSON Tools" = "json_tools.md" },
-  { "Real World" = "realworld.md" },
   { "Use case" = "usecase.md" },
   { "Systems Thinking" = "systems_thinking.md" },
   { "Current state" = "current-state.md" },
@@ -22,6 +19,11 @@ nav = [
   { "Research" = [
     { "Researchers" = "researchers.md" },
     { "Research signals" = "research-signals.md" },
+  ] },
+  { "Earlier work" = [
+    { "Tools" = "tools.md" },
+    { "JSON Tools" = "json_tools.md" },
+    { "Real World" = "realworld.md" },
   ] },
 ]
 
