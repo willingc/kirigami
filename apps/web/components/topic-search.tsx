@@ -15,6 +15,7 @@ import HowItWorksLink from "@/components/how-it-works-link";
 import { clientApiBaseUrl } from "@/lib/api";
 import { cn } from "@/lib/styles";
 import type { TopicListItem, TopicListResponse } from "@/lib/types";
+import { topicHref } from "@/topic/routes";
 
 type ResolvedTopic = {
   topic: {
@@ -189,7 +190,7 @@ export default function TopicSearch() {
       }
 
       const resolved = payload as ResolvedTopic;
-      router.push(`/topics/${resolved.topic.topic_id}`);
+      router.push(topicHref(resolved.topic.topic_id));
     } catch (lookupError) {
       setError(
         lookupError instanceof Error ? lookupError.message : "Unable to load topic.",
@@ -452,7 +453,7 @@ function TopicList({ topics }: { topics: TopicListItem[] }) {
           <div className="min-w-0">
             <a
               className="text-kiri-hero decoration-kiri-accent/35 text-[1.05rem] leading-tight font-black [overflow-wrap:anywhere] underline underline-offset-3"
-              href={`/topics/${topic.topic_id}`}
+              href={topicHref(topic.topic_id)}
             >
               {topic.title}
             </a>
@@ -491,7 +492,7 @@ function TopicList({ topics }: { topics: TopicListItem[] }) {
                 panelButton,
                 "border-kiri-hero bg-kiri-hero text-[#fbfffc]",
               )}
-              href={`/topics/${topic.topic_id}`}
+              href={topicHref(topic.topic_id)}
             >
               Open reader
             </a>

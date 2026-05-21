@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import BrandLogo from "@/components/brand-logo";
@@ -8,6 +8,7 @@ import ConversationWorkbench from "@/components/conversation-workbench";
 import GitHubLink from "@/components/github-link";
 import HowItWorksLink from "@/components/how-it-works-link";
 import { loadTopicDocument, topicMetaFromDocument } from "@/topic/data";
+import { topicIdFromSearchParams } from "@/topic/routes";
 import type { TopicDocument } from "@/topic/types";
 
 type LoadState =
@@ -15,15 +16,9 @@ type LoadState =
   | { status: "ready"; topicId: string; document: TopicDocument }
   | { status: "error"; topicId: string; message: string };
 
-function topicIdFromPathname(pathname: string | null): string | null {
-  if (!pathname) return null;
-  const match = pathname.match(/\/topics\/([^/]+)/);
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
 export default function TopicView() {
-  const pathname = usePathname();
-  const topicId = useMemo(() => topicIdFromPathname(pathname), [pathname]);
+  const searchParams = useSearchParams();
+  const topicId = useMemo(() => topicIdFromSearchParams(searchParams), [searchParams]);
   const [state, setState] = useState<LoadState>({ status: "idle" });
 
   useEffect(() => {
@@ -66,11 +61,7 @@ export default function TopicView() {
         </div>
       </header>
       <div className="pt-[73px] max-sm:pt-[69px]">
-        {isLoading && (
-          <div className="text-kiri-ink/70 px-[clamp(20px,4vw,64px)] py-12 text-sm">
-            Loading topic{topicId ? ` ${topicId}` : ""}…
-          </div>
-        )}
+        {isLoading && <TopicLoadingState />}
         {errorMessage && (
           <div className="text-kiri-ink px-[clamp(20px,4vw,64px)] py-12 text-sm">
             Failed to load topic{topicId ? ` ${topicId}` : ""}: {errorMessage}
@@ -87,5 +78,54 @@ export default function TopicView() {
         )}
       </div>
     </>
+  );
+}
+
+export function TopicLoadingState() {
+  return (
+    <div
+      className="grid min-h-[calc(100vh-73px)] place-items-center px-[clamp(20px,4vw,64px)] py-12 max-sm:px-2.5"
+      role="status"
+      aria-label="Preparing topic workspace"
+    >
+      <div className="border-kiri-hero/15 shadow-kiri-card grid w-full max-w-[760px] gap-5 rounded-lg border bg-[linear-gradient(180deg,#fbfdfb,#eef5f1)] p-5.5 max-sm:p-4">
+        <div className="flex items-center gap-4">
+          <div className="relative grid h-14 w-14 shrink-0 place-items-center">
+            <div className="border-kiri-accent/25 absolute inset-0 animate-spin rounded-lg border-2 border-t-[#f5c06f]" />
+            <svg
+              aria-hidden="true"
+              className="border-kiri-hero/20 bg-kiri-surface shadow-kiri-subtle h-10 w-10 rounded-lg border"
+              viewBox="0 0 44 44"
+            >
+              <rect width="44" height="44" fill="#fbfdfb" />
+              <path d="M0 0h44L22 22z" fill="#dff1f8" />
+              <path d="M0 0l22 22L0 44z" fill="#0b6ea8" />
+              <path d="M44 0v44L22 22z" fill="#f5c06f" />
+              <path d="M0 44h44L22 22z" fill="#16322b" />
+            </svg>
+          </div>
+          <div className="grid min-w-0 flex-1 gap-2.5">
+            <div className="bg-kiri-hero/18 h-3 w-32 animate-pulse rounded-full" />
+            <div className="bg-kiri-line h-2.5 w-full animate-pulse rounded-full" />
+            <div className="bg-kiri-line h-2.5 w-4/5 animate-pulse rounded-full" />
+          </div>
+        </div>
+        <div className="border-kiri-line bg-kiri-line grid gap-px overflow-hidden rounded-lg border">
+          {[0, 1, 2].map((row) => (
+            <div
+              className="bg-kiri-surface grid grid-cols-[64px_minmax(0,1fr)] gap-4 p-4 max-sm:grid-cols-1"
+              key={row}
+            >
+              <div className="bg-kiri-accent-soft h-12 w-12 animate-pulse rounded-lg" />
+              <div className="grid gap-2.5">
+                <div className="bg-kiri-line h-2.5 w-full animate-pulse rounded-full" />
+                <div className="bg-kiri-line h-2.5 w-11/12 animate-pulse rounded-full" />
+                <div className="bg-kiri-line h-2.5 w-2/3 animate-pulse rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

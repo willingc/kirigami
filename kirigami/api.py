@@ -154,7 +154,7 @@ def create_app() -> FastAPI:
 
 
 STATIC_DIR = pathlib.Path(__file__).parent / "static"
-TOPIC_FALLBACK_HTML = STATIC_DIR / "topics" / "_" / "index.html"
+TOPIC_FALLBACK_HTML = STATIC_DIR / "topics" / "index.html"
 
 
 def _mount_static_frontend(app: FastAPI) -> None:

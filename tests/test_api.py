@@ -63,6 +63,31 @@ def test_cors_allows_caddy_lan_https_origin() -> None:
     assert response.headers["access-control-allow-origin"] == "https://192.168.1.20"
 
 
+def test_static_frontend_serves_topics_query_shell(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    static_dir = tmp_path / "static"
+    topics_dir = static_dir / "topics"
+    topics_dir.mkdir(parents=True)
+    (static_dir / "index.html").write_text("<html>home</html>")
+    (topics_dir / "index.html").write_text("<html>topics shell</html>")
+    monkeypatch.setattr(api_module, "STATIC_DIR", static_dir)
+    monkeypatch.setattr(api_module, "TOPIC_FALLBACK_HTML", topics_dir / "index.html")
+
+    client = TestClient(api_module.create_app())
+
+    response = client.get("/topics?topicId=107450")
+
+    assert response.status_code == 200
+    assert response.text == "<html>topics shell</html>"
+
+    legacy_response = client.get("/topics/107450/")
+
+    assert legacy_response.status_code == 200
+    assert legacy_response.text == "<html>topics shell</html>"
+
+
 def _topic(topic_id: int = 123) -> TopicPosts:
     return TopicPosts(
         topic_id=topic_id,
