@@ -90,3 +90,7 @@ The deploy wrapper starts a Nix-provided Docker daemon when one is not already
 available at `DOCKER_HOST`. Its default storage path is
 `KIRIGAMI_DOCKER_DATA_ROOT=/opt/kirigami-docker`; point that variable at a
 mounted volume when the root disk is small.
+
+## Gratitude
+
+Hosting for the kirigami application is generously provided by: [FastAPI Cloud](https://fastapicloud.com/).
