@@ -1,5 +1,7 @@
 # kirigami
 
+[Application](https://kirigami.fastapicloud.dev/) | [Documentation](https://willingc.github.io/kirigami/)
+
 Kirigami is a Python toolkit for reorganizing and analyzing dialogue-oriented
 text. This repository now includes a starter web application with a Next.js
 frontend and a FastAPI backend.
