@@ -26,6 +26,14 @@ uv run --python "$KIRIGAMI_PYTHON_VERSION" --group notebooks python -m ipykernel
 description = "Start JupyterLab for notebooks/ (run notebooks:sync first)."
 run = 'uv run --python "$KIRIGAMI_PYTHON_VERSION" --group notebooks jupyter lab notebooks/'
 
+[tasks."docs:build"]
+description = "Build the documentation site to site/."
+run = 'uv run --python "$KIRIGAMI_PYTHON_VERSION" --group docs zensical build --clean'
+
+[tasks."docs:serve"]
+description = "Serve the documentation site locally."
+run = 'uv run --python "$KIRIGAMI_PYTHON_VERSION" --group docs zensical serve'
+
 [tasks.dev]
 description = "Launch the FastAPI backend and Next.js development server."
 run = "./scripts/dev-web.sh"

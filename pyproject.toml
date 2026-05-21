@@ -41,6 +41,9 @@ dev = [
   "pytest>=8.0",
   "ruff>=0.8",
 ]
+docs = [
+  "zensical>=0.0.32",
+]
 notebooks = [
   "bert-extractive-summarizer",
   "convokit",
