@@ -166,6 +166,15 @@ def test_topic_resolve_rejects_non_dpo_url() -> None:
     assert response.status_code == 400
 
 
+def test_topic_resolve_rejects_malformed_topic_url() -> None:
+    client = TestClient(app)
+
+    response = client.get("/api/topics/resolve?input=https://discuss.python.org/t")
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Topic URL did not include a topic ID."
+
+
 def test_recent_topics_are_cached(monkeypatch: pytest.MonkeyPatch) -> None:
     calls = {"n": 0}
 
@@ -289,6 +298,73 @@ def test_topic_document_includes_cooked_html(monkeypatch: pytest.MonkeyPatch) ->
     assert payload["pep_metadata"] is None
     assert payload["role_matches"] == []
     assert payload["analysis_warnings"] == []
+    assert payload["conversation_analysis"]["metrics"]["posts"] == 1
+    assert payload["thread_analysis"]["generated_by"] == (
+        f"kirigami.thread_analysis.v{api_module.ANALYSIS_VERSION}"
+    )
+
+
+def test_topic_document_uses_five_minute_api_cache(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = {"n": 0}
+
+    def fake_fetch_topic_posts(topic_id: int, **_kwargs: object) -> TopicPosts:
+        calls["n"] += 1
+        assert topic_id == 123
+        return _topic()
+
+    monkeypatch.setattr(api_module, "fetch_topic_posts", fake_fetch_topic_posts)
+    client = TestClient(app)
+
+    first_response = client.get("/api/topics/123/document")
+    second_response = client.get("/api/topics/123/document")
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+    assert calls["n"] == 1
+    assert first_response.json()["thread_analysis"] == second_response.json()["thread_analysis"]
+
+
+def test_topic_document_cache_key_includes_analysis_version() -> None:
+    cache_key = api_module._topic_document_cache_key(
+        "https://discuss.python.org/",
+        123,
+    )
+
+    assert cache_key == (
+        "https://discuss.python.org:topic-document:"
+        f"123:analysis:{api_module.ANALYSIS_VERSION}"
+    )
+
+
+def test_topic_document_ignores_cache_with_wrong_topic_id(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    store = api_module.KirigamiStore.from_cache_dir(tmp_path / "discourse")
+    store.set_api_cache(
+        f"https://discuss.python.org:topic-document:123:analysis:{api_module.ANALYSIS_VERSION}",
+        {"topic": {"topic_id": 999}, "posts": []},
+    )
+    calls = {"n": 0}
+
+    def fake_fetch_topic_posts(topic_id: int, **_kwargs: object) -> TopicPosts:
+        calls["n"] += 1
+        assert topic_id == 123
+        return _topic()
+
+    monkeypatch.setattr(api_module, "fetch_topic_posts", fake_fetch_topic_posts)
+    client = TestClient(app)
+
+    response = client.get("/api/topics/123/document")
+
+    assert response.status_code == 200
+    assert calls["n"] == 1
+    assert response.json()["topic"]["topic_id"] == 123
+    assert store.get_api_cache(
+        f"https://discuss.python.org:topic-document:123:analysis:{api_module.ANALYSIS_VERSION}"
+    )["topic"]["topic_id"] == 123
 
 
 def test_topic_document_retries_public_fetch_after_auth_403(

@@ -70,10 +70,12 @@ export default function TopicView() {
         {document && (
           <ConversationWorkbench
             analysisWarnings={document.analysis_warnings}
+            conversationAnalysis={document.conversation_analysis}
             meta={topicMetaFromDocument(document)}
             pepMetadata={document.pep_metadata}
             posts={document.posts}
             roleMatches={document.role_matches}
+            threadAnalysis={document.thread_analysis}
           />
         )}
       </div>

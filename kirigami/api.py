@@ -39,6 +39,11 @@ from .discourse.people import (
 from .discourse.resolve import resolve_pep_thread
 from .pep import PepMetadata, fetch_pep_metadata
 from .store import API_CACHE_TTL_SECONDS, KirigamiStore
+from .thread_analysis import (
+    ANALYSIS_VERSION,
+    analyze_conversation_document,
+    analyze_thread_document,
+)
 
 def create_app() -> FastAPI:
     """Create the FastAPI application."""
@@ -297,6 +302,9 @@ def _parse_topic_input(value: str) -> int:
     if not parts or parts[0] != "t":
         raise HTTPException(status_code=400, detail="URL must be a discuss.python.org topic URL.")
 
+    if len(parts) < 2:
+        raise HTTPException(status_code=400, detail="Topic URL did not include a topic ID.")
+
     if parts[1].isdecimal():
         topic_id_part = parts[1]
     elif len(parts) > 2:
@@ -314,6 +322,14 @@ def _parse_topic_input(value: str) -> int:
 
 def _fetch_topic_document(topic_id: int) -> dict[str, Any]:
     settings = load_discourse_settings()
+    store = KirigamiStore.from_cache_dir(settings.cache_dir)
+    cache_key = _topic_document_cache_key(settings.base_url, topic_id)
+    cached = store.get_api_cache(cache_key)
+    if cached is not None:
+        if _topic_document_matches(cached, topic_id):
+            return cached
+        store.clear_cache_key(cache_key)
+
     warnings: list[str] = []
     try:
         # Build the pydiscourse client from the same credentials when auth is
@@ -348,13 +364,24 @@ def _fetch_topic_document(topic_id: int) -> dict[str, Any]:
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-    return _reader_document(topic, settings=settings, warnings=warnings)
+    document = _reader_document(topic, settings=settings, store=store, warnings=warnings)
+    if not _topic_document_matches(document, topic_id):
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "Fetched topic document did not match the requested topic "
+                f"{topic_id}."
+            ),
+        )
+    store.set_api_cache(cache_key, document)
+    return document
 
 
 def _reader_document(
     topic: Any,
     *,
     settings: DiscourseSettings,
+    store: KirigamiStore,
     warnings: list[str],
 ) -> dict[str, Any]:
     document = normalize_topic(topic)
@@ -398,7 +425,9 @@ def _reader_document(
     ]
     document["role_matches"] = [match.to_dict() for match in role_matches]
     document["analysis_warnings"] = warnings
-    KirigamiStore.from_cache_dir(settings.cache_dir).upsert_topic_document(
+    document["conversation_analysis"] = analyze_conversation_document(document)
+    document["thread_analysis"] = analyze_thread_document(document)
+    store.upsert_topic_document(
         topic_id=topic.topic_id,
         schema_version=int(document.get("schema_version") or 0),
         source_last_posted_at=topic.last_posted_at,
@@ -455,7 +484,24 @@ def _refresh_people_profiles_enabled() -> bool:
 def _document_enrichment_fingerprint(document: dict[str, Any]) -> str:
     pep = document.get("pep_metadata") or {}
     participants = document.get("participants") or []
-    return f"pep:{pep.get('fetched_at', '')}:participants:{len(participants)}"
+    return (
+        f"pep:{pep.get('fetched_at', '')}:participants:{len(participants)}:"
+        f"thread-analysis:{ANALYSIS_VERSION}"
+    )
+
+
+def _topic_document_cache_key(base_url: str, topic_id: int) -> str:
+    return f"{base_url.rstrip('/')}:topic-document:{topic_id}:analysis:{ANALYSIS_VERSION}"
+
+
+def _topic_document_matches(document: dict[str, Any], topic_id: int) -> bool:
+    topic = document.get("topic")
+    if not isinstance(topic, dict):
+        return False
+    try:
+        return int(topic.get("topic_id")) == topic_id
+    except (TypeError, ValueError):
+        return False
 
 
 def _package_version() -> str:

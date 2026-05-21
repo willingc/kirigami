@@ -10,6 +10,12 @@ export async function loadTopicDocument(topicId: string): Promise<TopicDocument>
     throw new Error(result.error);
   }
 
+  if (/^\d+$/.test(topicId) && String(result.data.topic?.topic_id ?? "") !== topicId) {
+    throw new Error(
+      `API returned topic ${result.data.topic?.topic_id ?? "unknown"} for requested topic ${topicId}`,
+    );
+  }
+
   return {
     ...result.data,
     posts: sortPosts(result.data.posts),

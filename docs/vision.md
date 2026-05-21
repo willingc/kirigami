@@ -6,7 +6,7 @@ The primary setting is [discuss.python.org](https://discuss.python.org), especia
 
 ## Current product direction
 
-The current implementation is a **source-linked evidence dashboard**, not a generated consensus summary. For PEP threads it enriches Discourse posts with metadata from `peps.python.org`, tags PEP authors/sponsors/delegates when they can be matched to Discourse users, and visualizes deterministic signals for agreement, disagreement, questions, revisions, concessions, and resolution markers. Issue cards keep every source post visible and let readers filter locally by signal type using the colored bar or matching chips.
+The current implementation is a **source-linked debate map**, not a generated consensus summary. For PEP threads it enriches Discourse posts with metadata from `peps.python.org`, tags PEP authors/sponsors/delegates when they can be matched to Discourse users, and visualizes Thread Radar plus deterministic evidence signals for agreement, disagreement, questions, revisions, concessions, and resolution markers. Issue cards keep every source post visible and let readers filter locally by signal type using the colored bar or matching chips.
 
 Generated whole-thread summaries, author-position prose, multi-thread PEP bundles, and official consensus detection remain roadmap items. The source post remains the authority.
 

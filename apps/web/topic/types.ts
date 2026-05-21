@@ -93,6 +93,8 @@ export type TopicDocument = {
   participants: ParticipantProfile[];
   role_matches: RoleMatch[];
   analysis_warnings: string[];
+  conversation_analysis: ConversationAnalysis;
+  thread_analysis: ThreadAnalysis;
 };
 
 export type SignalCategory =
@@ -137,6 +139,7 @@ export type IssueStatus =
 export type DiscussionIssue = {
   id: string;
   label: string;
+  description: string;
   status: IssueStatus;
   confidence: number;
   postNumbers: number[];
@@ -190,4 +193,79 @@ export type ConversationAnalysis = {
   topQuoteTargets: QuoteTarget[];
   issues: DiscussionIssue[];
   positionEvents: PositionEvent[];
+};
+
+export type ThreadAnalysis = {
+  version: number;
+  generated_by: string;
+  overview: ThreadAnalysisOverview;
+  topics: ThreadTopic[];
+};
+
+export type ThreadAnalysisOverview = {
+  topic_count: number;
+  burning_count: number;
+  latest_topic_label: string;
+  highest_burn_score: number;
+  recently_active_count: number;
+  summary: string;
+};
+
+export type ThreadTopic = {
+  id: string;
+  label: string;
+  description: string;
+  priority_score: number;
+  recency_score: number;
+  disagreement_score: number;
+  burn: ThreadBurn;
+  post_numbers: number[];
+  post_count: number;
+  thread_share: number;
+  participant_count: number;
+  participants: string[];
+  last_activity_at: string;
+  last_post_number: number;
+  signal_counts: Record<SignalCategory, number>;
+  convergence: ThreadTopicAxis;
+  divergence: ThreadTopicAxis;
+  participant_stances: ThreadParticipantStance[];
+  evidence: ThreadTopicEvidence[];
+  next_actions: string[];
+};
+
+export type ThreadBurn = {
+  label: "cool" | "warm" | "hot" | "burning";
+  emoji: string;
+  percent: number;
+  note: string;
+};
+
+export type ThreadTopicAxis = {
+  label: string;
+  score: number;
+};
+
+export type ThreadParticipantStance = {
+  username: string;
+  stance:
+    | "strongly_approving"
+    | "approving"
+    | "mixed"
+    | "disapproving"
+    | "strongly_disapproving";
+  score: number;
+  latest_post_number: number;
+  latest_activity_at: string;
+  evidence: string;
+  signal_categories: SignalCategory[];
+  roles: PepRoleTag[];
+};
+
+export type ThreadTopicEvidence = {
+  post_number: number;
+  username: string;
+  created_at: string;
+  excerpt: string;
+  signal_categories: SignalCategory[];
 };

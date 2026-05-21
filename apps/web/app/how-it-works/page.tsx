@@ -110,7 +110,7 @@ const nlpDetails = [
   },
   {
     title: "Issue-level evidence filters",
-    body: "The dashboard groups related evidence into issue cards. Each card lists all source posts it uses, and the colored signal bar plus matching chips filter that card's source list by evidence type.",
+    body: "The Evidence Map groups related evidence into issue cards. Each card lists all source posts it uses, and the colored signal bar plus matching chips filter that card's source list by evidence type.",
   },
   {
     title: "Reading-time estimation",

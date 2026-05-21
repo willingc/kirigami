@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent, ReactNode, RefObject } from "react";
-import { analyzeConversation, cookedHtml, postText } from "@/topic/analysis";
+import { cookedHtml, postText } from "@/topic/post-rendering";
 import type {
   AuthorSummary,
   ConversationAnalysis,
@@ -13,6 +13,9 @@ import type {
   RoleMatch,
   Signal,
   SignalCategory,
+  ThreadAnalysis,
+  ThreadParticipantStance,
+  ThreadTopic,
   TopicMeta,
   TopicPost,
 } from "@/topic/types";
@@ -70,7 +73,8 @@ function sourcePostUrl(sourceUrl: string, postNumber: number): string {
 }
 
 const workbenchTabs = [
-  { id: "dashboard", label: "Dashboard" },
+  { id: "radar", label: "Thread Radar" },
+  { id: "evidence", label: "Evidence Map" },
   { id: "summary", label: "Signal summary" },
   { id: "path", label: "Reading path" },
   { id: "positions", label: "Evidence for agreement and disagreement" },
@@ -143,19 +147,23 @@ export default function ConversationWorkbench({
   pepMetadata,
   roleMatches = [],
   analysisWarnings = [],
+  conversationAnalysis,
+  threadAnalysis,
 }: {
   posts: TopicPost[];
   meta: TopicMeta;
   pepMetadata?: PepMetadata | null;
   roleMatches?: RoleMatch[];
   analysisWarnings?: string[];
+  conversationAnalysis: ConversationAnalysis;
+  threadAnalysis: ThreadAnalysis;
 }) {
-  const [activeTab, setActiveTab] = useState<WorkbenchTab>("dashboard");
+  const [activeTab, setActiveTab] = useState<WorkbenchTab>("radar");
   const [activeSourcePost, setActiveSourcePost] = useState<number | null>(null);
   const sourceListRef = useRef<HTMLDivElement>(null);
   const sourceRegionRef = useRef<HTMLDivElement>(null);
   const isTimelineDraggingRef = useRef(false);
-  const analysis = useMemo(() => analyzeConversation(posts), [posts]);
+  const analysis = conversationAnalysis;
   const postsByNumber = useMemo(
     () => new Map(posts.map((post) => [post.post_number, post])),
     [posts],
@@ -284,12 +292,19 @@ export default function ConversationWorkbench({
             <a
               className="text-kiri-ink rounded-full border border-[#f5c06f] bg-[#f5c06f] px-3 py-1.5 text-[0.83rem] font-bold no-underline"
               href={meta.sourceUrl}
+              rel="noopener noreferrer"
+              target="_blank"
             >
               Open Discourse
             </a>
             <span className={darkPill}>Heuristic evidence, not conclusions</span>
             {pepMetadata ? (
-              <a className={darkPill} href={pepMetadata.url}>
+              <a
+                className={darkPill}
+                href={pepMetadata.url}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
                 PEP {pepMetadata.number}
                 {pepMetadata.status ? ` · ${pepMetadata.status}` : ""}
               </a>
@@ -335,8 +350,17 @@ export default function ConversationWorkbench({
           id={`panel-${activeTab}`}
           role="tabpanel"
         >
-          {activeTab === "dashboard" ? (
-            <DashboardSection
+          {activeTab === "radar" ? (
+            <ThreadRadarSection
+              postsByNumber={postsByNumber}
+              sourceUrl={meta.sourceUrl}
+              signalsByPost={signalsByPost}
+              threadAnalysis={threadAnalysis}
+            />
+          ) : null}
+
+          {activeTab === "evidence" ? (
+            <EvidenceMapSection
               analysis={analysis}
               firstPost={firstPost}
               meta={meta}
@@ -498,21 +522,13 @@ export default function ConversationWorkbench({
                 className="mt-6 grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,190px)] items-start gap-4.5 max-lg:grid-cols-1"
                 ref={sourceRegionRef}
               >
-                <div
-                  className="grid max-w-full min-w-0 gap-3.5 pr-1.5 [overflow-anchor:none]"
+                <SourcePostList
                   id="source-list"
-                  ref={sourceListRef}
-                >
-                  {posts.map((post) => (
-                    <SourceMessage
-                      expanded
-                      key={post.id}
-                      post={post}
-                      sourceUrl={meta.sourceUrl}
-                      signals={signalsByPost.get(post.post_number)}
-                    />
-                  ))}
-                </div>
+                  posts={posts}
+                  sourceListRef={sourceListRef}
+                  sourceUrl={meta.sourceUrl}
+                  signalsByPost={signalsByPost}
+                />
                 <SourceTimeline
                   activePostNumber={activeSourcePost}
                   onDragEnd={() => {
@@ -607,7 +623,101 @@ function BriefBlock({
   );
 }
 
-function DashboardSection({
+function ThreadRadarSection({
+  postsByNumber,
+  sourceUrl,
+  signalsByPost,
+  threadAnalysis,
+}: {
+  postsByNumber: Map<number, TopicPost>;
+  sourceUrl: string;
+  signalsByPost: Map<number, Signal[]>;
+  threadAnalysis: ThreadAnalysis;
+}) {
+  const visibleTopics = threadAnalysis.topics;
+
+  return (
+    <section className="grid gap-5 pb-12">
+      <div className="grid gap-3.5 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.6fr)]">
+        <div className={cn(sectionPanel, "grid gap-4 p-5.5 max-sm:p-3.5")}>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-kiri-muted text-[0.76rem] font-black uppercase">
+                Recent debate map
+              </p>
+              <h2 className="mt-1 text-2xl leading-tight font-black tracking-normal">
+                {threadAnalysis.overview.summary}
+              </h2>
+            </div>
+            <span
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-[0.82rem] font-black",
+                threadAnalysis.overview.burning_count > 0
+                  ? "border-[#c7352b]/35 bg-[#ffe0dc] text-[#9f241c]"
+                  : "border-[#07804f]/35 bg-[#dff7e8] text-[#05683f]",
+              )}
+            >
+              {threadAnalysis.overview.burning_count} burning
+            </span>
+          </div>
+          <div className="grid grid-cols-4 gap-2 max-lg:grid-cols-2 max-sm:grid-cols-1">
+            <RadarMetric label="Topics" value={threadAnalysis.overview.topic_count} />
+            <RadarMetric
+              label="Recent"
+              value={threadAnalysis.overview.recently_active_count}
+            />
+            <RadarMetric
+              label="Highest burn"
+              value={threadAnalysis.overview.highest_burn_score.toFixed(1)}
+            />
+            <RadarMetric
+              label="Top topic"
+              value={threadAnalysis.overview.latest_topic_label || "None"}
+            />
+          </div>
+        </div>
+        <div
+          className={cn(sectionPanel, "grid content-start gap-3 p-5.5 max-sm:p-3.5")}
+        >
+          <h3 className="text-[1rem] font-black">What to do next</h3>
+          <ol className="grid list-none gap-2 p-0">
+            {visibleTopics.slice(0, 3).flatMap((topic) =>
+              topic.next_actions.slice(0, 1).map((action) => (
+                <li
+                  className="border-kiri-line text-kiri-muted rounded-lg border bg-white/70 p-3 text-sm leading-relaxed font-bold"
+                  key={`${topic.id}-${action}`}
+                >
+                  {action}
+                </li>
+              )),
+            )}
+          </ol>
+        </div>
+      </div>
+
+      <div className="grid gap-3.5">
+        {visibleTopics.length > 0 ? (
+          visibleTopics.map((topic, index) => (
+            <ThreadTopicCard
+              index={index}
+              key={topic.id}
+              postsByNumber={postsByNumber}
+              signalsByPost={signalsByPost}
+              sourceUrl={sourceUrl}
+              topic={topic}
+            />
+          ))
+        ) : (
+          <p className="border-kiri-line text-kiri-muted rounded-lg border border-dashed bg-white/70 p-4 font-bold">
+            No recurring source-linked topics were detected yet.
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function EvidenceMapSection({
   analysis,
   firstPost,
   meta,
@@ -625,7 +735,7 @@ function DashboardSection({
   signalsByPost: Map<number, Signal[]>;
 }) {
   const roleEvents = analysis.positionEvents.filter((event) => event.roles.length > 0);
-  const focusTopics = discussionFocusTerms(firstPost);
+  const focusTopics = analysis.issues.slice(0, 8).map((issue) => issue.label);
 
   return (
     <section className="grid gap-5 pb-12">
@@ -646,27 +756,29 @@ function DashboardSection({
             <a
               className="text-kiri-ink rounded-lg border border-[#f5c06f] bg-[#f5c06f] px-3 py-2 text-sm font-black no-underline"
               href={pepMetadata.url}
+              rel="noopener noreferrer"
+              target="_blank"
             >
               PEP {pepMetadata.number}
             </a>
           ) : null}
         </div>
         <div className="grid grid-cols-5 gap-2 max-lg:grid-cols-2 max-sm:grid-cols-1">
-          <DashboardMetric label="Issues" value={analysis.issues.length} />
-          <DashboardMetric
+          <EvidenceMetric label="Issues" value={analysis.issues.length} />
+          <EvidenceMetric
             label="Contested"
             value={
               analysis.issues.filter((issue) => issue.status === "in_contention").length
             }
           />
-          <DashboardMetric
+          <EvidenceMetric
             label="Resolved"
             value={
               analysis.issues.filter((issue) => issue.status === "resolved").length
             }
           />
-          <DashboardMetric label="Role events" value={roleEvents.length} />
-          <DashboardMetric
+          <EvidenceMetric label="Role events" value={roleEvents.length} />
+          <EvidenceMetric
             label="Position shifts"
             value={analysis.signals.concession.length}
           />
@@ -765,13 +877,422 @@ function DashboardSection({
   );
 }
 
-function DashboardMetric({ label, value }: { label: string; value: number }) {
+function EvidenceMetric({ label, value }: { label: string; value: number }) {
   return (
     <div className="border-kiri-line rounded-lg border bg-white/70 p-3">
       <p className="text-kiri-muted text-[0.72rem] font-black uppercase">{label}</p>
       <p className="text-kiri-hero mt-1 text-2xl font-black">
         {numberFormatter.format(value)}
       </p>
+    </div>
+  );
+}
+
+function RadarMetric({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="border-kiri-line rounded-lg border bg-white/70 p-3">
+      <p className="text-kiri-muted text-[0.72rem] font-black uppercase">{label}</p>
+      <p className="text-kiri-hero mt-1 min-w-0 text-xl font-black [overflow-wrap:anywhere]">
+        {typeof value === "number" ? numberFormatter.format(value) : value}
+      </p>
+    </div>
+  );
+}
+
+function ThreadTopicCard({
+  topic,
+  index,
+  postsByNumber,
+  sourceUrl,
+  signalsByPost,
+}: {
+  topic: ThreadTopic;
+  index: number;
+  postsByNumber: Map<number, TopicPost>;
+  sourceUrl: string;
+  signalsByPost: Map<number, Signal[]>;
+}) {
+  const [isDiscussionOpen, setIsDiscussionOpen] = useState(false);
+  const discussionPosts = useMemo(
+    () =>
+      topic.post_numbers
+        .map((postNumber) => postsByNumber.get(postNumber))
+        .filter((post): post is TopicPost => Boolean(post)),
+    [postsByNumber, topic.post_numbers],
+  );
+  const disapproving = topic.participant_stances.filter((stance) =>
+    stance.stance.includes("disapproving"),
+  );
+  const approving = topic.participant_stances.filter((stance) =>
+    stance.stance.includes("approving"),
+  );
+  const mixed = topic.participant_stances.filter((stance) => stance.stance === "mixed");
+
+  return (
+    <article
+      className={cn(
+        sectionPanel,
+        "grid gap-4 p-5.5 max-sm:p-3.5",
+        topic.burn.label === "burning" &&
+          "border-[#c7352b]/45 bg-[linear-gradient(180deg,#fff3f1,#fbfdfb_48%)]",
+      )}
+    >
+      <header className="grid gap-3 lg:grid-cols-[minmax(0,0.72fr)_minmax(280px,0.28fr)]">
+        <div className="min-w-0">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className="bg-kiri-hero text-kiri-surface rounded-full px-2.5 py-1 text-[0.72rem] font-black">
+              #{index + 1}
+            </span>
+            {discussionPosts.length > 0 ? (
+              <button
+                className="border-kiri-accent bg-kiri-accent focus-visible:ring-kiri-accent mx-3 max-w-full min-w-0 cursor-pointer rounded-full border px-4.5 py-1.5 text-[0.83rem] leading-tight font-black [overflow-wrap:anywhere] text-[#fbfffc] shadow-[0_8px_18px_rgba(8,112,166,0.24)] hover:bg-[#075f8d] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                onClick={() => setIsDiscussionOpen(true)}
+                type="button"
+              >
+                Open Discussion
+              </button>
+            ) : null}
+            <span className="text-kiri-muted text-[0.86rem] leading-tight font-extrabold">
+              Last discussed {formatRelativeTime(topic.last_activity_at)}
+            </span>
+          </div>
+          <h3 className="text-[1.28rem] leading-tight font-black [overflow-wrap:anywhere]">
+            {topic.label}
+          </h3>
+          {topic.description ? (
+            <p className="text-kiri-hero mt-2 max-w-3xl text-sm leading-relaxed font-bold">
+              {topic.description}
+            </p>
+          ) : null}
+          <p className="text-kiri-muted mt-2 leading-relaxed">
+            {topic.post_count} posts, {topic.participant_count} participants,{" "}
+            {Math.round(topic.thread_share * 100)}% of thread.
+          </p>
+        </div>
+        <BurnGauge topic={topic} />
+      </header>
+
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,0.72fr)_minmax(280px,0.28fr)]">
+        <div className="grid gap-3">
+          <ConvergenceDivergence topic={topic} />
+          <div className="grid gap-2">
+            <p className="text-kiri-muted text-[0.78rem] font-black uppercase">
+              Newest source evidence
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {topic.evidence.map((evidence) => {
+                const post = postsByNumber.get(evidence.post_number);
+                return post ? (
+                  <EvidenceDrawer
+                    key={`${topic.id}-${evidence.post_number}`}
+                    label={`#${evidence.post_number} · @${evidence.username}`}
+                    post={post}
+                    sourceUrl={sourceUrl}
+                    signals={signalsByPost.get(evidence.post_number)}
+                  />
+                ) : null;
+              })}
+            </div>
+          </div>
+        </div>
+
+        <aside className="grid content-start gap-3">
+          <StanceGroup
+            label="Diverging"
+            postsByNumber={postsByNumber}
+            signalsByPost={signalsByPost}
+            sourceUrl={sourceUrl}
+            stances={disapproving}
+            tone="contest"
+          />
+          <StanceGroup
+            label="Converging"
+            postsByNumber={postsByNumber}
+            signalsByPost={signalsByPost}
+            sourceUrl={sourceUrl}
+            stances={approving}
+            tone="progress"
+          />
+          <StanceGroup
+            label="Mixed"
+            postsByNumber={postsByNumber}
+            signalsByPost={signalsByPost}
+            sourceUrl={sourceUrl}
+            stances={mixed}
+            tone="neutral"
+          />
+        </aside>
+      </div>
+
+      <div className="border-kiri-line rounded-lg border bg-white/70 p-3.5">
+        <p className="text-kiri-muted text-[0.78rem] font-black uppercase">
+          Suggested next move
+        </p>
+        <ul className="text-kiri-muted mt-2 grid gap-1.5 pl-4.5 text-sm leading-relaxed font-bold">
+          {topic.next_actions.map((action) => (
+            <li key={action}>{action}</li>
+          ))}
+        </ul>
+      </div>
+      {isDiscussionOpen ? (
+        <TopicDiscussionModal
+          onClose={() => setIsDiscussionOpen(false)}
+          posts={discussionPosts}
+          signalsByPost={signalsByPost}
+          sourceUrl={sourceUrl}
+          topic={topic}
+        />
+      ) : null}
+    </article>
+  );
+}
+
+function TopicDiscussionModal({
+  onClose,
+  posts,
+  signalsByPost,
+  sourceUrl,
+  topic,
+}: {
+  onClose: () => void;
+  posts: TopicPost[];
+  signalsByPost: Map<number, Signal[]>;
+  sourceUrl: string;
+  topic: ThreadTopic;
+}) {
+  const titleId = `topic-discussion-${topic.id}`;
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  function scrollDiscussionToBottom() {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) {
+      return;
+    }
+    scrollContainer.scrollTo({
+      top: scrollContainer.scrollHeight,
+      behavior: "smooth",
+    });
+  }
+
+  useEffect(() => {
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousDocumentOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousDocumentOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      aria-labelledby={titleId}
+      aria-modal="true"
+      className="bg-kiri-hero/70 fixed inset-0 z-50 grid min-w-0 p-[clamp(12px,3vw,36px)] backdrop-blur-sm"
+      onClick={onClose}
+      role="dialog"
+    >
+      <section
+        className="border-kiri-line shadow-kiri-subtle grid max-h-[calc(100vh-24px)] min-h-0 w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)] self-center justify-self-center overflow-hidden rounded-lg border bg-[linear-gradient(180deg,#fbfdfb,#edf5f0)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <header className="border-kiri-line bg-kiri-surface grid gap-3 border-b px-5.5 py-4 max-sm:px-3.5">
+          <div className="flex min-w-0 items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-kiri-muted text-[0.74rem] font-black uppercase">
+                Topic discussion
+              </p>
+              <h2
+                className="text-kiri-hero mt-1 text-xl leading-tight font-black [overflow-wrap:anywhere]"
+                id={titleId}
+              >
+                {topic.label}
+              </h2>
+            </div>
+            <div className="flex shrink-0 flex-wrap justify-end gap-2">
+              <button
+                className="border-kiri-accent/30 bg-kiri-accent-soft text-kiri-accent grid h-9 cursor-pointer place-items-center rounded-lg border px-3 text-sm font-black hover:bg-[#cfe9f4]"
+                onClick={scrollDiscussionToBottom}
+                type="button"
+              >
+                Scroll to bottom
+              </button>
+              <button
+                aria-label="Close discussion"
+                className="grid h-9 min-w-9 cursor-pointer place-items-center rounded-lg border border-[#c7352b]/45 bg-[#ffe0dc] px-3 text-sm font-black text-[#9f241c] hover:bg-[#ffd0ca] focus-visible:ring-2 focus-visible:ring-[#c7352b] focus-visible:ring-offset-2 focus-visible:outline-none"
+                onClick={onClose}
+                type="button"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+          {topic.description ? (
+            <p className="text-kiri-muted max-w-3xl text-sm leading-relaxed font-bold">
+              {topic.description}
+            </p>
+          ) : null}
+        </header>
+        <div
+          className="min-h-0 overflow-y-auto overscroll-contain p-4 max-sm:p-2.5"
+          ref={scrollContainerRef}
+        >
+          <SourcePostList
+            emptyMessage="No source posts were attached to this topic."
+            idPrefix={`topic-${topic.id}-post`}
+            posts={posts}
+            sourceUrl={sourceUrl}
+            signalsByPost={signalsByPost}
+          />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function BurnGauge({ topic }: { topic: ThreadTopic }) {
+  return (
+    <div className="border-kiri-line grid content-start gap-2 rounded-lg border bg-white/75 p-3.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[1.55rem]" aria-hidden="true">
+          {topic.burn.emoji}
+        </span>
+        <strong
+          className={cn(
+            "rounded-full px-2.5 py-1 text-[0.74rem] font-black uppercase",
+            burnTone(topic.burn.label),
+          )}
+        >
+          {topic.burn.label}
+        </strong>
+      </div>
+      <div
+        aria-label={`Disagreement score ${topic.disagreement_score.toFixed(1)} of 10`}
+        className="bg-kiri-line h-3 overflow-hidden rounded-full"
+      >
+        <div
+          className={cn("h-full rounded-full", burnBarTone(topic.burn.label))}
+          style={{ width: `${Math.min(100, Math.max(0, topic.burn.percent))}%` }}
+        />
+      </div>
+      <p className="text-kiri-hero text-2xl font-black">
+        {topic.disagreement_score.toFixed(1)}
+        <span className="text-kiri-muted text-sm"> / 10</span>
+      </p>
+      <p className="text-kiri-muted text-sm leading-relaxed font-bold">
+        {topic.burn.note}
+      </p>
+    </div>
+  );
+}
+
+function ConvergenceDivergence({ topic }: { topic: ThreadTopic }) {
+  const convergencePercent = Math.min(100, Math.max(0, topic.convergence.score * 10));
+  const divergencePercent = Math.min(100, Math.max(0, topic.divergence.score * 10));
+
+  return (
+    <div className="grid gap-2">
+      <AxisBar
+        label={`Convergence: ${topic.convergence.label}`}
+        percent={convergencePercent}
+        tone="progress"
+      />
+      <AxisBar
+        label={`Divergence: ${topic.divergence.label}`}
+        percent={divergencePercent}
+        tone="contest"
+      />
+    </div>
+  );
+}
+
+function AxisBar({
+  label,
+  percent,
+  tone,
+}: {
+  label: string;
+  percent: number;
+  tone: "progress" | "contest";
+}) {
+  return (
+    <div className="border-kiri-line rounded-lg border bg-white/70 p-3">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <span className="text-sm font-black">{label}</span>
+        <span className="text-kiri-muted text-xs font-black">
+          {Math.round(percent)}%
+        </span>
+      </div>
+      <div className="bg-kiri-line h-2.5 overflow-hidden rounded-full">
+        <div
+          className={cn(
+            "h-full rounded-full",
+            tone === "progress" ? "bg-[#07804f]" : "bg-[#c7352b]",
+          )}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function StanceGroup({
+  label,
+  postsByNumber,
+  sourceUrl,
+  signalsByPost,
+  stances,
+  tone,
+}: {
+  label: string;
+  postsByNumber: Map<number, TopicPost>;
+  sourceUrl: string;
+  signalsByPost: Map<number, Signal[]>;
+  stances: ThreadParticipantStance[];
+  tone: "contest" | "progress" | "neutral";
+}) {
+  if (stances.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="border-kiri-line rounded-lg border bg-white/70 p-3">
+      <p className="text-kiri-muted text-[0.76rem] font-black uppercase">{label}</p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {stances.slice(0, 6).map((stance) => {
+          const post = postsByNumber.get(stance.latest_post_number);
+          return post ? (
+            <EvidenceDrawer
+              key={`${stance.username}-${stance.latest_post_number}`}
+              label={`@${stance.username} · #${stance.latest_post_number}`}
+              post={post}
+              sourceUrl={sourceUrl}
+              signals={signalsByPost.get(stance.latest_post_number)}
+            />
+          ) : (
+            <span
+              className={cn(
+                "rounded-full border px-2.5 py-1 text-[0.76rem] font-black",
+                stanceTone(tone),
+              )}
+              key={`${stance.username}-${stance.latest_post_number}`}
+              title={`${stanceLabel(stance.stance)} at #${stance.latest_post_number}`}
+            >
+              @{stance.username} · #{stance.latest_post_number}
+            </span>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -982,6 +1503,11 @@ function IssueCard({
             <h3 className="text-[1.08rem] leading-tight font-black [overflow-wrap:anywhere]">
               {issue.label}
             </h3>
+            {issue.description ? (
+              <p className="text-kiri-hero mt-1 text-sm leading-relaxed font-bold">
+                {issue.description}
+              </p>
+            ) : null}
             <p className="text-kiri-muted mt-1 text-sm font-bold">
               {issue.postNumbers.length} source posts
             </p>
@@ -1389,6 +1915,54 @@ function EvidenceDrawer({
   );
 }
 
+function SourcePostList({
+  className,
+  emptyMessage = "No source posts are available.",
+  id,
+  idPrefix = "post",
+  posts,
+  sourceListRef,
+  sourceUrl,
+  signalsByPost,
+}: {
+  className?: string;
+  emptyMessage?: string;
+  id?: string;
+  idPrefix?: string;
+  posts: TopicPost[];
+  sourceListRef?: RefObject<HTMLDivElement | null>;
+  sourceUrl: string;
+  signalsByPost: Map<number, Signal[]>;
+}) {
+  return (
+    <div
+      className={cn(
+        "grid max-w-full min-w-0 gap-3.5 pr-1.5 [overflow-anchor:none]",
+        className,
+      )}
+      id={id}
+      ref={sourceListRef}
+    >
+      {posts.length > 0 ? (
+        posts.map((post) => (
+          <SourceMessage
+            expanded
+            idPrefix={idPrefix}
+            key={post.id}
+            post={post}
+            sourceUrl={sourceUrl}
+            signals={signalsByPost.get(post.post_number)}
+          />
+        ))
+      ) : (
+        <p className="border-kiri-line text-kiri-muted rounded-lg border border-dashed bg-white/70 p-4 font-bold">
+          {emptyMessage}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function SourceTimeline({
   posts,
   activePostNumber,
@@ -1621,11 +2195,13 @@ function SourceTimeline({
 }
 
 function SourceMessage({
+  idPrefix = "post",
   post,
   sourceUrl,
   signals,
   expanded = false,
 }: {
+  idPrefix?: string;
   post: TopicPost;
   sourceUrl: string;
   signals?: Signal[];
@@ -1635,7 +2211,7 @@ function SourceMessage({
     <details
       className={cn(sectionPanel, "[&>summary::-webkit-details-marker]:hidden")}
       data-source-post={post.post_number}
-      id={`post-${post.post_number}`}
+      id={`${idPrefix}-${post.post_number}`}
       open={expanded}
     >
       <summary className="flex cursor-pointer list-none items-start justify-between gap-3.5 p-5.5 max-sm:flex-col">
@@ -1699,8 +2275,10 @@ function SourcePreview({
         <a
           className={sourceOpenButton}
           href={sourcePostUrl(sourceUrl, post.post_number)}
+          rel="noopener noreferrer"
+          target="_blank"
         >
-          Open source
+          Open Source
         </a>
       </header>
 
@@ -1737,7 +2315,7 @@ function SourcePreview({
       ) : null}
 
       <div
-        className="discoursePost border-kiri-line bg-kiri-surface max-w-full min-w-0 rounded-lg border p-5.5 text-[0.98rem] leading-relaxed [overflow-wrap:anywhere] text-[#303733] max-sm:p-3.5"
+        className="discoursePost border-kiri-line bg-kiri-surface max-w-full min-w-0 rounded-lg border p-5.5 text-[0.98rem] leading-relaxed text-[#303733] max-sm:p-3.5"
         dangerouslySetInnerHTML={{ __html: cookedHtml(post) }}
       />
     </article>
@@ -1860,34 +2438,52 @@ function threadFocusSummary(firstPost: TopicPost | undefined, title: string): st
     return title;
   }
   const text = postText(firstPost);
-  const firstSpecificSentence =
+  const firstMeaningfulSentence =
     text
       .match(/[^.!?]+(?:[.!?]+|$)/g)
       ?.map((sentence) => sentence.trim())
-      .find((sentence) =>
-        /focus|variant|wheel|metadata|index|ordering|pylock|dependencies/i.test(
-          sentence,
-        ),
-      ) ?? "";
-  return firstSpecificSentence || title;
+      .find((sentence) => sentence.split(/\s+/).filter(Boolean).length >= 8) ?? "";
+  return firstMeaningfulSentence || title;
 }
 
-function discussionFocusTerms(firstPost: TopicPost | undefined): string[] {
-  if (!firstPost) {
-    return [];
+function burnTone(label: ThreadTopic["burn"]["label"]): string {
+  if (label === "burning") {
+    return "bg-[#c7352b] text-white";
   }
-  const text = postText(firstPost).toLowerCase();
-  const terms = [
-    ["wheel file changes", "wheel file"],
-    ["variant labels", "variant label"],
-    ["variant properties", "variant properties"],
-    ["index metadata", "index"],
-    ["variant ordering", "ordering"],
-    ["environment markers", "environment markers"],
-    ["pylock.toml", "pylock.toml"],
-    ["PEP split from PEP 817", "pep 817"],
-  ];
-  return terms.filter(([, marker]) => text.includes(marker)).map(([label]) => label);
+  if (label === "hot") {
+    return "bg-kiri-contest-soft text-kiri-contest";
+  }
+  if (label === "warm") {
+    return "bg-kiri-note-soft text-kiri-note";
+  }
+  return "bg-[#dff7e8] text-[#05683f]";
+}
+
+function burnBarTone(label: ThreadTopic["burn"]["label"]): string {
+  if (label === "burning") {
+    return "bg-[#c7352b]";
+  }
+  if (label === "hot") {
+    return "bg-kiri-contest";
+  }
+  if (label === "warm") {
+    return "bg-kiri-note";
+  }
+  return "bg-[#07804f]";
+}
+
+function stanceTone(tone: "contest" | "progress" | "neutral"): string {
+  if (tone === "contest") {
+    return "border-[#c7352b]/35 bg-[#ffe0dc] text-[#9f241c]";
+  }
+  if (tone === "progress") {
+    return "border-[#07804f]/35 bg-[#dff7e8] text-[#05683f]";
+  }
+  return "border-kiri-line bg-kiri-soft text-kiri-muted";
+}
+
+function stanceLabel(stance: ThreadParticipantStance["stance"]): string {
+  return stance.replace(/_/g, " ");
 }
 
 function statusLabel(status: DiscussionIssue["status"]): string {
@@ -1990,6 +2586,34 @@ function formatDate(value: string): string {
     return "Unknown";
   }
   return dateFormatter.format(new Date(value));
+}
+
+function formatRelativeTime(value: string): string {
+  if (!value) {
+    return "unknown";
+  }
+
+  const then = new Date(value).getTime();
+  if (Number.isNaN(then)) {
+    return "unknown";
+  }
+
+  const elapsedMs = Math.max(0, Date.now() - then);
+  const units = [
+    { label: "year", ms: 365 * 24 * 60 * 60 * 1000 },
+    { label: "month", ms: 30 * 24 * 60 * 60 * 1000 },
+    { label: "day", ms: 24 * 60 * 60 * 1000 },
+    { label: "hour", ms: 60 * 60 * 1000 },
+  ];
+
+  for (const unit of units) {
+    const count = Math.floor(elapsedMs / unit.ms);
+    if (count >= 1) {
+      return `${count} ${unit.label}${count === 1 ? "" : "s"} ago`;
+    }
+  }
+
+  return "less than an hour ago";
 }
 
 function formatTime(value: string): string {

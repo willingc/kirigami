@@ -142,6 +142,38 @@ export default function TopicSearch() {
   }, [refreshTopicList]);
 
   useEffect(() => {
+    function refreshMissingOrStaleLists(force = false) {
+      for (const kind of TOPIC_LIST_TABS.map((tab) => tab.kind)) {
+        const current = topicListsRef.current[kind];
+        if (
+          force ||
+          !current.data ||
+          Date.now() - current.fetchedAt >= TOPIC_LIST_STALE_MS
+        ) {
+          void refreshTopicList(kind, force);
+        }
+      }
+    }
+
+    function handlePageShow(event: PageTransitionEvent) {
+      refreshMissingOrStaleLists(event.persisted);
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        refreshMissingOrStaleLists();
+      }
+    }
+
+    window.addEventListener("pageshow", handlePageShow);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [refreshTopicList]);
+
+  useEffect(() => {
     void refreshTopicList(activeList);
   }, [activeList, refreshTopicList]);
 
@@ -412,12 +444,14 @@ export default function TopicSearch() {
               {activeTopicList.error}
             </p>
           ) : null}
-          {activeTopicList.isLoading && !activeTopicList.data ? (
+          {!activeTopicList.data ? (
             <p className="text-kiri-muted rounded-lg bg-white/70 p-4.5 font-extrabold">
-              Loading topics...
+              {activeTopicList.error
+                ? "Topic feed is unavailable."
+                : "Loading topics..."}
             </p>
           ) : (
-            <TopicList topics={activeTopicList.data?.topics ?? []} />
+            <TopicList topics={activeTopicList.data.topics} />
           )}
         </div>
       </section>
@@ -499,7 +533,7 @@ function TopicList({ topics }: { topics: TopicListItem[] }) {
             <a
               className={cn(panelButton, "bg-kiri-surface text-kiri-hero")}
               href={topic.url}
-              rel="noreferrer"
+              rel="noopener noreferrer"
               target="_blank"
             >
               Source

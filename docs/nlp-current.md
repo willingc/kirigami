@@ -1,4 +1,4 @@
-# Current NLP and PEP-aware dashboard
+# Current NLP, Thread Radar, and PEP-aware evidence map
 
 Kirigami currently uses deterministic NLP and source-linked metadata. It does not generate an official consensus summary and it does not infer hidden intent.
 
@@ -40,9 +40,41 @@ Code blocks and headings are excluded from signal detection. For each match, Kir
 
 Scores rank review priority. They are based on matched phrase count plus lightweight interaction signals from replies and quotes. Scores are not confidence values.
 
-## Dashboard status
+## Thread Radar
 
-The dashboard groups evidence into issue cards and assigns a status hypothesis:
+Thread Radar and the Evidence Map analysis are computed in the Python backend
+and returned as `thread_analysis` and `conversation_analysis` on the topic
+document API. The enriched document is cached for 5 minutes through the existing
+API cache. The frontend renders these payloads; it does not recompute signals,
+issues, phases, participant summaries, or fallback Thread Radar topics.
+
+Thread Radar groups source-linked discussed topics, orders them by internal
+review priority, and emphasizes recent active debate. Topic labels are derived
+from technical terms and short key phrases in the source text, not from a
+hardcoded domain taxonomy. Labels are scored as self-contained phrases, so the
+UI can show current framing such as a migration risk, syntax question, or
+behavior concern instead of a bare term. Each topic also includes a compact
+server-generated description with the source span, latest framing, and signal
+mix. The internal priority score combines post coverage, participant breadth,
+reply/quote interaction, recurrence, recency, and unresolved contention. It
+sorts the cards but is not displayed as a separate topic score.
+
+The visible topic card keeps the scoring simple: a plain "Last discussed ..."
+recency label, an Open Discussion button, source evidence, and the burn gauge.
+
+Each topic has a disagreement score from 0 to 10 and a flame burn gauge. Scores
+above 7 are burning. The score decays when later agreement, concession,
+revision, or resolution evidence overtakes earlier disagreement. Small tangents
+are capped so a few heated posts cannot dominate a large thread.
+
+Participant stance is latest-effective-position. Early opposition is softened or
+replaced when a participant later approves, concedes, or accepts a revision.
+
+The full design is documented in [Thread Radar heuristic](thread-radar-heuristic.md).
+
+## Evidence Map status
+
+The Evidence Map groups evidence into issue cards and assigns a status hypothesis:
 
 - `resolved`
 - `work_in_progress`
@@ -70,3 +102,13 @@ Selecting a color filters the issue's review controls to posts with that signal 
 Kirigami tracks source-linked position events when posts contain support, concern, questions, concessions, revisions, or resolution language. This is designed to show that people can revise their position over time, especially PEP authors responding to objections.
 
 The system preserves exact source posts so a reader can verify every tag, status, and position event.
+
+## Source and code rendering
+
+Source previews preserve Discourse cooked HTML in the Sources tab and Open
+Discussion modal. Discourse, PEP, topic-feed, and embedded source links open in
+a new tab with `noopener noreferrer`; internal app navigation remains normal.
+Code blocks keep whitespace and use horizontal scrolling. Plain code receives
+lightweight syntax coloring, existing Discourse highlight spans are preserved,
+and extracted-code list wrappers are converted back to newline-separated code
+text before rendering.

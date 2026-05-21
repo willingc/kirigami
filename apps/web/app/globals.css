@@ -106,6 +106,18 @@
     margin: 0 0 1em;
     color: #303733;
     line-height: 1.64;
+    overflow-wrap: anywhere;
+  }
+
+  .discoursePost li,
+  .discoursePost blockquote,
+  .discoursePost aside.quote,
+  .discoursePost h1,
+  .discoursePost h2,
+  .discoursePost h3,
+  .discoursePost h4,
+  .discoursePost h5 {
+    overflow-wrap: anywhere;
   }
 
   .discoursePost hr {
@@ -223,6 +235,7 @@
   }
 
   .discoursePost pre {
+    max-width: 100%;
     overflow: auto;
     border-radius: 8px;
     padding: 14px;
@@ -231,6 +244,10 @@
     font-family: var(--font-mono);
     font-size: 0.86rem;
     line-height: 1.5;
+    overflow-wrap: normal;
+    tab-size: 2;
+    white-space: pre;
+    word-break: normal;
   }
 
   .discoursePost pre code {
@@ -238,6 +255,54 @@
     padding: 0;
     background: transparent;
     color: inherit;
+    overflow-wrap: normal;
+    white-space: pre;
+    word-break: normal;
+  }
+
+  .discoursePost pre code *,
+  .discoursePost pre span {
+    overflow-wrap: normal;
+    white-space: pre;
+    word-break: normal;
+  }
+
+  .discoursePost .kiri-code-keyword,
+  .discoursePost .hljs-keyword,
+  .discoursePost .hljs-built_in,
+  .discoursePost .hljs-literal,
+  .discoursePost .token.keyword,
+  .discoursePost .token.boolean {
+    color: #88c7ff;
+  }
+
+  .discoursePost .kiri-code-string,
+  .discoursePost .hljs-string,
+  .discoursePost .hljs-regexp,
+  .discoursePost .token.string {
+    color: #a9d18e;
+  }
+
+  .discoursePost .kiri-code-comment,
+  .discoursePost .hljs-comment,
+  .discoursePost .token.comment {
+    color: #8c9b91;
+    font-style: italic;
+  }
+
+  .discoursePost .kiri-code-number,
+  .discoursePost .hljs-number,
+  .discoursePost .token.number {
+    color: #f5c06f;
+  }
+
+  .discoursePost .kiri-code-symbol,
+  .discoursePost .hljs-title,
+  .discoursePost .hljs-name,
+  .discoursePost .hljs-attr,
+  .discoursePost .token.function,
+  .discoursePost .token.class-name {
+    color: #d7b5ff;
   }
 
   .discoursePost table {

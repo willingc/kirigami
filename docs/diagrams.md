@@ -2,7 +2,7 @@
 
 Excalidraw diagrams illustrate [Vision](vision.md). Published PNGs are on dedicated pages; source `.excalidraw` files remain editable in [Excalidraw](https://excalidraw.com) or Excalidraw+.
 
-Current implementation note: the diagrams still include roadmap concepts such as generated summaries and full graph/swimlane views. The implemented reader is described in [Current NLP](nlp-current.md): PEP metadata enrichment, PEP role tags, deterministic signal evidence, issue cards, and source-linked dashboard status.
+Current implementation note: the diagrams still include roadmap concepts such as generated summaries and full graph/swimlane views. The implemented reader is described in [Current NLP](nlp-current.md): PEP metadata enrichment, PEP role tags, Thread Radar, deterministic signal evidence, issue cards, and source-linked Evidence Map status.
 
 ## Diagram pages
 
