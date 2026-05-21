@@ -48,7 +48,7 @@
             export KIRIGAMI_API_BASE_URL="''${KIRIGAMI_API_BASE_URL:-http://127.0.0.1:8000}"
 
             echo "Kirigami shell ready."
-            echo "Run: mise run setup | mise run dev | mise run deploy | mise run test"
+            echo "Run: mise run setup | mise run dev | mise run deploy:docker | mise run deploy:fastapi | mise run test"
           '';
         };
       }

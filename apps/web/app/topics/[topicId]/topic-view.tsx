@@ -11,9 +11,9 @@ import { loadTopicDocument, topicMetaFromDocument } from "@/topic/data";
 import type { TopicDocument } from "@/topic/types";
 
 type LoadState =
-  | { status: "loading" }
-  | { status: "ready"; document: TopicDocument }
-  | { status: "error"; message: string };
+  | { status: "idle" }
+  | { status: "ready"; topicId: string; document: TopicDocument }
+  | { status: "error"; topicId: string; message: string };
 
 function topicIdFromPathname(pathname: string | null): string | null {
   if (!pathname) return null;
@@ -24,29 +24,37 @@ function topicIdFromPathname(pathname: string | null): string | null {
 export default function TopicView() {
   const pathname = usePathname();
   const topicId = useMemo(() => topicIdFromPathname(pathname), [pathname]);
-  const [state, setState] = useState<LoadState>({ status: "loading" });
+  const [state, setState] = useState<LoadState>({ status: "idle" });
 
   useEffect(() => {
     if (!topicId) {
-      setState({ status: "error", message: "No topic ID in URL" });
       return;
     }
     let cancelled = false;
-    setState({ status: "loading" });
     loadTopicDocument(topicId)
       .then((document) => {
-        if (!cancelled) setState({ status: "ready", document });
+        if (!cancelled) setState({ status: "ready", topicId, document });
       })
       .catch((error: unknown) => {
         if (cancelled) return;
-        const message =
-          error instanceof Error ? error.message : "Failed to load topic";
-        setState({ status: "error", message });
+        const message = error instanceof Error ? error.message : "Failed to load topic";
+        setState({ status: "error", topicId, message });
       });
     return () => {
       cancelled = true;
     };
   }, [topicId]);
+
+  const isLoading =
+    Boolean(topicId) && (state.status === "idle" || state.topicId !== topicId);
+  const errorMessage =
+    topicId === null
+      ? "No topic ID in URL"
+      : state.status === "error" && state.topicId === topicId
+        ? state.message
+        : null;
+  const document =
+    state.status === "ready" && state.topicId === topicId ? state.document : null;
 
   return (
     <>
@@ -58,23 +66,23 @@ export default function TopicView() {
         </div>
       </header>
       <div className="pt-[73px] max-sm:pt-[69px]">
-        {state.status === "loading" && (
+        {isLoading && (
           <div className="text-kiri-ink/70 px-[clamp(20px,4vw,64px)] py-12 text-sm">
             Loading topic{topicId ? ` ${topicId}` : ""}…
           </div>
         )}
-        {state.status === "error" && (
+        {errorMessage && (
           <div className="text-kiri-ink px-[clamp(20px,4vw,64px)] py-12 text-sm">
-            Failed to load topic{topicId ? ` ${topicId}` : ""}: {state.message}
+            Failed to load topic{topicId ? ` ${topicId}` : ""}: {errorMessage}
           </div>
         )}
-        {state.status === "ready" && (
+        {document && (
           <ConversationWorkbench
-            analysisWarnings={state.document.analysis_warnings}
-            meta={topicMetaFromDocument(state.document)}
-            pepMetadata={state.document.pep_metadata}
-            posts={state.document.posts}
-            roleMatches={state.document.role_matches}
+            analysisWarnings={document.analysis_warnings}
+            meta={topicMetaFromDocument(document)}
+            pepMetadata={document.pep_metadata}
+            posts={document.posts}
+            roleMatches={document.role_matches}
           />
         )}
       </div>

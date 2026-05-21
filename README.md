@@ -32,14 +32,14 @@ mise run dev
 Run the production-style Docker Compose stack behind Caddy:
 
 ```bash
-mise run deploy
+mise run deploy:docker
 ```
 
 Or deploy to FastAPI Cloud (builds the Next.js static export and bundles it
 into the FastAPI app, so frontend and backend ship together behind one URL):
 
 ```bash
-./deploy.sh
+mise run deploy:fastapi
 ```
 
 See [FASTAPI.md](FASTAPI.md) for FastAPI Cloud deploy details.
@@ -62,8 +62,8 @@ the backend. In deploy mode, browser requests use same-origin `/api/...` through
 Caddy, while `KIRIGAMI_API_BASE_URL` keeps Next.js server-side requests on the
 internal backend URL.
 
-`mise run deploy` runs `docker compose up -d --build` and builds three images:
-FastAPI backend, Next.js frontend, and Caddy. Caddy listens on all interfaces on
+`mise run deploy:docker` runs `docker compose up -d --build` and builds three
+images: FastAPI backend, static frontend, and Caddy. Caddy listens on all interfaces on
 ports `80` and `443` for `https://www.dpodoesnt.work`; Caddy obtains and renews
 the Let's Encrypt certificate automatically. Override `KIRIGAMI_CADDY_ADDR` to
 change the Caddy site address. The backend CORS defaults allow local development

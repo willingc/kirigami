@@ -6,10 +6,7 @@ DEFAULT_CADDY_ADDR="https://www.dpodoesnt.work"
 DOCKERD_LOG="${KIRIGAMI_DOCKERD_LOG:-/tmp/kirigami-dockerd.log}"
 DOCKER_DATA_ROOT="${KIRIGAMI_DOCKER_DATA_ROOT:-/opt/kirigami-docker}"
 DOCKER_EXEC_ROOT="${KIRIGAMI_DOCKER_EXEC_ROOT:-/run/kirigami-docker-exec}"
-DOCKER_HOST="${DOCKER_HOST:-unix:///run/kirigami-docker.sock}"
-DOCKER_SOCKET="${DOCKER_HOST#unix://}"
-
-export DOCKER_HOST
+DOCKER_FALLBACK_HOST="${KIRIGAMI_DOCKER_HOST:-unix:///run/kirigami-docker.sock}"
 
 cd "$ROOT_DIR"
 
@@ -32,9 +29,12 @@ export KIRIGAMI_CORS_ORIGIN_REGEX
 if ! docker info >/dev/null 2>&1; then
   if ! command -v dockerd >/dev/null 2>&1; then
     echo "Docker daemon is not running and dockerd is not on PATH." >&2
-    echo "Enter the Nix shell first: nix develop" >&2
+    echo "Start Docker Desktop or enter an environment with dockerd available." >&2
     exit 127
   fi
+
+  export DOCKER_HOST="$DOCKER_FALLBACK_HOST"
+  DOCKER_SOCKET="${DOCKER_HOST#unix://}"
 
   if [[ -f /tmp/kirigami-dockerd-launch.pid ]]; then
     kill "$(cat /tmp/kirigami-dockerd-launch.pid)" >/dev/null 2>&1 || true
@@ -66,8 +66,10 @@ if ! docker info >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "Docker host: $DOCKER_HOST"
-echo "Docker data root: $DOCKER_DATA_ROOT"
+echo "Docker host: ${DOCKER_HOST:-$(docker context show)}"
+if [[ -n "${DOCKER_HOST:-}" ]]; then
+  echo "Docker data root: $DOCKER_DATA_ROOT"
+fi
 
 export COMPOSE_PARALLEL_LIMIT="${COMPOSE_PARALLEL_LIMIT:-1}"
 

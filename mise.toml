@@ -23,8 +23,12 @@ run = "./scripts/dev-web.sh"
 description = "Apply Kirigami SQLite store migrations."
 run = 'uv run --python "$KIRIGAMI_PYTHON_VERSION" python -m kirigami migrate'
 
-[tasks.deploy]
-description = "Build and launch Caddy, the FastAPI backend, and the Next.js production server with Docker Compose."
+[tasks."deploy:fastapi"]
+description = "Build the static frontend bundle and deploy the FastAPI app to FastAPI Cloud."
+run = "./deploy.sh"
+
+[tasks."deploy:docker"]
+description = "Build and launch Caddy, the FastAPI backend, and the static frontend with Docker Compose."
 run = "./scripts/deploy-web.sh"
 
 [tasks.clean]

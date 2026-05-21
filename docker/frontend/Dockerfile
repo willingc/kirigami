@@ -18,19 +18,11 @@ COPY apps/web ./apps/web
 
 RUN npm run build --prefix apps/web
 
-FROM node:24-alpine AS runner
+FROM caddy:2-alpine AS runner
 
-WORKDIR /app
-
-ENV NODE_ENV=production \
-    NEXT_TELEMETRY_DISABLED=1 \
-    HOSTNAME=0.0.0.0 \
-    PORT=3000 \
-    KIRIGAMI_API_BASE_URL=http://backend:8000
-
-COPY --from=builder /app/apps/web/.next/standalone ./
-COPY --from=builder /app/apps/web/.next/static ./.next/static
+COPY docker/frontend/Caddyfile /etc/caddy/Caddyfile
+COPY --from=builder /app/apps/web/out /srv
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

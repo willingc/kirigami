@@ -1,0 +1,16 @@
+{
+	admin off
+}
+
+:3000 {
+	root * /srv
+	encode zstd gzip
+
+	handle /topics/* {
+		try_files {path} {path}/ /topics/_/index.html /index.html
+		file_server
+	}
+
+	try_files {path} {path}/ /index.html
+	file_server
+}

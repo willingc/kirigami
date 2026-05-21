@@ -33,7 +33,6 @@ dependencies = [
   "python-dotenv>=1.0.1",
   "requests>=2.34.2",
   "spacy>=3.8.14; python_version < '3.14'",
-  "sqlite-utils",
   "trogon",
 ]
 
@@ -74,9 +73,7 @@ path = "kirigami/__about__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["kirigami"]
-
-[tool.hatch.build.targets.wheel.force-include]
-"kirigami/static" = "kirigami/static"
+artifacts = ["kirigami/static/**"]
 
 [tool.hatch.envs.default]
 dependencies = [

@@ -1,20 +1,18 @@
 FROM python:3.13-slim
 
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app/src
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir \
-    "click" \
-    "fastapi>=0.115" \
-    "uvicorn[standard]>=0.34" \
-    "httpx>=0.28" \
-    "pydiscourse==1.7.0" \
-    "python-dotenv>=1.0.1" \
-    "requests>=2.34.2"
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
-COPY src ./src
+COPY pyproject.toml uv.lock README.md ./
+COPY kirigami ./kirigami
+
+RUN uv sync --locked --no-dev
 
 EXPOSE 8000
 
