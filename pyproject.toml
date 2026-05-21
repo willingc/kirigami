@@ -42,6 +42,7 @@ dev = [
   "ruff>=0.8",
 ]
 notebooks = [
+  "bert-extractive-summarizer",
   "convokit",
   "ipykernel",
   "jupyter",
@@ -52,6 +53,7 @@ notebooks = [
   "scipy>=1.13.0",
   "seaborn>=0.13.2",
   "spacy>=3.8.14; python_version < '3.14'",
+  "transformers",
 ]
 
 [project.scripts]
