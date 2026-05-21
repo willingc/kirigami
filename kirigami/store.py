@@ -834,8 +834,6 @@ def _canonical_query_json(params: dict[str, Any] | list[tuple[str, Any]] | None)
 
 def _auth_scope(client: httpx.Client) -> str:
     headers = getattr(client, "headers", {})
-    if headers.get("User-Api-Key"):
-        return "user-api-key"
     if headers.get("Api-Key"):
         username = headers.get("Api-Username", "")
         return f"api-key:{username}"

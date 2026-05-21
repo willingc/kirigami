@@ -86,9 +86,6 @@ def create_discourse_client(
     if key and user:
         headers["Api-Key"] = key
         headers["Api-Username"] = user
-    user_key = _clean_secret(os.environ.get("DISCOURSE_USER_API_KEY"))
-    if user_key:
-        headers = {"User-Api-Key": user_key}
 
     return httpx.Client(
         base_url=base_url.rstrip("/"),

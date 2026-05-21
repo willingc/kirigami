@@ -18,7 +18,6 @@ class DiscourseSettings:
     base_url: str
     api_key: str | None
     api_username: str | None
-    user_api_key: str | None
     cache_dir: Path
 
 
@@ -31,7 +30,6 @@ def load_discourse_settings(*, load_env: bool = True) -> DiscourseSettings:
         base_url=os.environ.get("DISCOURSE_BASE_URL", DISCOURSE_BASE_URL).rstrip("/"),
         api_key=_clean_secret(os.environ.get("DISCOURSE_API_KEY")),
         api_username=_clean_secret(os.environ.get("DISCOURSE_USERNAME")),
-        user_api_key=_clean_secret(os.environ.get("DISCOURSE_USER_API_KEY")),
         cache_dir=Path(os.environ.get("KIRIGAMI_DISCOURSE_CACHE_DIR", ".cache/kirigami/discourse")),
     )
 
@@ -47,8 +45,6 @@ def load_dotenv_file() -> None:
 
 def discourse_headers(settings: DiscourseSettings) -> dict[str, str]:
     """Return API auth headers for Discourse's HTTP API."""
-    if settings.user_api_key:
-        return {"User-Api-Key": settings.user_api_key}
     if not settings.api_key or not settings.api_username:
         return {}
     return {
@@ -66,7 +62,6 @@ def _clean_secret(value: str | None) -> str | None:
     placeholders = {
         "your_api_key_here",
         "your_discourse_username",
-        "your_discourse_user_api_key_here",
         "changeme",
         "change_me",
     }

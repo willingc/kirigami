@@ -11,7 +11,6 @@ services:
       DISCOURSE_BASE_URL: ${DISCOURSE_BASE_URL:-https://discuss.python.org}
       DISCOURSE_USERNAME: ${DISCOURSE_USERNAME:-}
       DISCOURSE_API_KEY: ${DISCOURSE_API_KEY:-}
-      DISCOURSE_USER_API_KEY: ${DISCOURSE_USER_API_KEY:-}
       KIRIGAMI_DISCOURSE_CACHE_DIR: /var/cache/kirigami/discourse
       KIRIGAMI_CORS_ORIGINS: ${KIRIGAMI_CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,https://localhost,https://127.0.0.1,https://www.dpodoesnt.work}
       KIRIGAMI_CORS_ORIGIN_REGEX: ${KIRIGAMI_CORS_ORIGIN_REGEX:-https://(www\.dpodoesnt\.work|localhost|127\.0\.0\.1|0\.0\.0\.0|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+|192\.168\.\d+\.\d+)}

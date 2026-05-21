@@ -116,20 +116,17 @@ Set these on the FastAPI Cloud app:
 | Variable | FastAPI Cloud value |
 | --- | --- |
 | `DISCOURSE_BASE_URL` | `https://discuss.python.org` |
-| `DISCOURSE_USERNAME` | `<discourse-username>` when using `DISCOURSE_API_KEY`; otherwise leave unset |
-| `DISCOURSE_API_KEY` | `<secret>` when using an admin/global Discourse API key; otherwise leave unset |
-| `DISCOURSE_USER_API_KEY` | `<secret>` when using a user API key; otherwise leave unset |
+| `DISCOURSE_USERNAME` | `<discourse-username>` when using authenticated Discourse access; otherwise leave unset |
+| `DISCOURSE_API_KEY` | `<secret>` when using authenticated Discourse access; otherwise leave unset |
 | `KIRIGAMI_DISCOURSE_CACHE_DIR` | `/tmp/kirigami/discourse` |
 | `KIRIGAMI_CORS_ORIGINS` | leave unset for the bundled same-origin frontend |
 | `KIRIGAMI_CORS_ORIGIN_REGEX` | leave unset for the bundled same-origin frontend |
 
 Use one Discourse authentication mode:
 
-- User API key mode: set `DISCOURSE_USER_API_KEY=<secret>` and leave
-  `DISCOURSE_USERNAME` / `DISCOURSE_API_KEY` unset.
-- Admin/global API key mode: set `DISCOURSE_USERNAME=<discourse-username>` and
-  `DISCOURSE_API_KEY=<secret>`, and leave `DISCOURSE_USER_API_KEY` unset.
-- Public-only mode: leave all three Discourse auth values unset.
+- API key mode: set `DISCOURSE_USERNAME=<discourse-username>` and
+  `DISCOURSE_API_KEY=<secret>`.
+- Public-only mode: leave both Discourse auth values unset.
 
 Example:
 
@@ -138,7 +135,6 @@ uv run --locked fastapi cloud env set DISCOURSE_BASE_URL "https://discuss.python
 uv run --locked fastapi cloud env set KIRIGAMI_DISCOURSE_CACHE_DIR "/tmp/kirigami/discourse"
 uv run --locked fastapi cloud env set DISCOURSE_USERNAME "<discourse-username>"
 uv run --locked fastapi cloud env set --secret DISCOURSE_API_KEY "<secret>"
-uv run --locked fastapi cloud env set --secret DISCOURSE_USER_API_KEY "<secret>"
 ```
 
 ### Deploy Auth

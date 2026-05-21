@@ -328,7 +328,7 @@ def _fetch_topic_document(topic_id: int) -> dict[str, Any]:
                 cache_dir=settings.cache_dir,
             )
         except httpx.HTTPStatusError as exc:
-            has_auth = bool(settings.user_api_key or (settings.api_key and settings.api_username))
+            has_auth = bool(settings.api_key and settings.api_username)
             if exc.response.status_code != 403 or not has_auth:
                 raise
             with httpx.Client(base_url=settings.base_url, timeout=30.0) as public_client:
