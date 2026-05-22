@@ -1,0 +1,1961 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://willingc.github.io/kirigami/vision/">
+      
+      
+        <link rel="prev" href="../nlp-current/">
+      
+      
+        <link rel="next" href="../diagrams/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.43">
+    
+    
+      
+        <title>Kirigami vision: understanding long PEP discussions on Discourse - kirigami</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.fba56155.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#kirigami-vision-understanding-long-pep-discussions-on-discourse" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="kirigami" class="md-header__button md-logo" aria-label="kirigami" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            kirigami
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Kirigami vision: understanding long PEP discussions on Discourse
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/willingc/kirigami" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    willingc/kirigami
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="kirigami" class="md-nav__button md-logo" aria-label="kirigami" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    kirigami
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/willingc/kirigami" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    willingc/kirigami
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Home
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usecase/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Use case
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../systems_thinking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Systems Thinking
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../current-state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Current state
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../nlp-current/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Current NLP
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Vision
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Vision
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#current-product-direction" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Current product direction
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-the-problem-with-long-running-discourse-threads" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        1. The problem with long-running Discourse threads
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. The problem with long-running Discourse threads">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scale-and-fragmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Scale and fragmentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structure-that-hides-the-argument" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Structure that hides the argument
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weak-affordances-for-synthesis" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Weak affordances for synthesis
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cost-for-different-readers" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Cost for different readers
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-matters-for-kirigami" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Why this matters for kirigami
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-principle-source-messages-remain-first-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        2. Principle: source messages remain first-class
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Principle: source messages remain first-class">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-source-message-means" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What “source message” means
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-we-will-not-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What we will not do
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-summaries-relate-to-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        How summaries relate to sources
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-goal-summarization-of-the-entire-thread" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        3. Goal: summarization of the entire thread
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Goal: summarization of the entire thread">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intent" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Intent
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Requirements
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#open-design-choices-for-later-iteration" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Open design choices (for later iteration)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-goal-key-point-summarization-of-each-message" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        4. Goal: key-point summarization of each message
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Goal: key-point summarization of each message">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intent_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Intent
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#requirements_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Requirements
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relationship-to-thread-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Relationship to thread summary
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-goal-author-centric-visualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        5. Goal: author-centric visualization
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Goal: author-centric visualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intent_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Intent
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualization-conceptual" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Visualization (conceptual)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Scope
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-goal-conversation-flow-visualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        6. Goal: conversation-flow visualization
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Goal: conversation-flow visualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intent_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Intent
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Inputs
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualization-conceptual_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Visualization (conceptual)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#success-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Success criteria
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-cutting-themes" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Cross-cutting themes
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cross-cutting themes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pep-specific-discourse-general" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        PEP-specific, Discourse-general
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kirigami-cut" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Kirigami “cut”
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#human-in-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Human in the loop
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope-for-this-vision-for-now" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Out of scope for this vision (for now)
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Summary
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Diagrams
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Diagrams
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../diagrams/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Color legend
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../diagram-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Overview
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../diagram-author-flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Author and flow
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Research
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Research
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../researchers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Researchers
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research-signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Research signals
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Earlier work
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Earlier work
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Tools
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../json_tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  JSON Tools
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../realworld/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Real World
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#current-product-direction" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Current product direction
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-the-problem-with-long-running-discourse-threads" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        1. The problem with long-running Discourse threads
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. The problem with long-running Discourse threads">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scale-and-fragmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Scale and fragmentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structure-that-hides-the-argument" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Structure that hides the argument
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weak-affordances-for-synthesis" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Weak affordances for synthesis
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cost-for-different-readers" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Cost for different readers
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-matters-for-kirigami" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Why this matters for kirigami
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-principle-source-messages-remain-first-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        2. Principle: source messages remain first-class
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Principle: source messages remain first-class">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-source-message-means" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What “source message” means
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-we-will-not-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What we will not do
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-summaries-relate-to-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        How summaries relate to sources
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-goal-summarization-of-the-entire-thread" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        3. Goal: summarization of the entire thread
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Goal: summarization of the entire thread">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intent" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Intent
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Requirements
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#open-design-choices-for-later-iteration" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Open design choices (for later iteration)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-goal-key-point-summarization-of-each-message" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        4. Goal: key-point summarization of each message
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Goal: key-point summarization of each message">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intent_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Intent
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#requirements_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Requirements
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relationship-to-thread-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Relationship to thread summary
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-goal-author-centric-visualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        5. Goal: author-centric visualization
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Goal: author-centric visualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intent_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Intent
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualization-conceptual" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Visualization (conceptual)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Scope
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-goal-conversation-flow-visualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        6. Goal: conversation-flow visualization
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Goal: conversation-flow visualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intent_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Intent
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Inputs
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualization-conceptual_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Visualization (conceptual)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#success-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Success criteria
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-cutting-themes" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Cross-cutting themes
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cross-cutting themes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pep-specific-discourse-general" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        PEP-specific, Discourse-general
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kirigami-cut" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Kirigami “cut”
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#human-in-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Human in the loop
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope-for-this-vision-for-now" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Out of scope for this vision (for now)
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Summary
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+<h1 id="kirigami-vision-understanding-long-pep-discussions-on-discourse">Kirigami vision: understanding long PEP discussions on Discourse<a class="headerlink" href="#kirigami-vision-understanding-long-pep-discussions-on-discourse" title="Permanent link">&para;</a></h1>
+<p>Kirigami reorganizes and cuts dialogue. This document states the problem, the principles any solution must honor, and the experiences we want to enable—before committing to architecture or implementation.</p>
+<p>The primary setting is <a href="https://discuss.python.org">discuss.python.org</a>, especially threads that debate Python Enhancement Proposals (PEPs). The same ideas apply to other long-running Discourse conversations.</p>
+<h2 id="current-product-direction">Current product direction<a class="headerlink" href="#current-product-direction" title="Permanent link">&para;</a></h2>
+<p>The current implementation is a <strong>source-linked debate map</strong>, not a generated consensus summary. For PEP threads it enriches Discourse posts with metadata from <code>peps.python.org</code>, tags PEP authors/sponsors/delegates when they can be matched to Discourse users, and visualizes Thread Radar plus deterministic evidence signals for agreement, disagreement, questions, revisions, concessions, and resolution markers. Issue cards keep every source post visible and let readers filter locally by signal type using the colored bar or matching chips.</p>
+<p>Generated whole-thread summaries, author-position prose, multi-thread PEP bundles, and official consensus detection remain roadmap items. The source post remains the authority.</p>
+<hr />
+<h2 id="1-the-problem-with-long-running-discourse-threads">1. The problem with long-running Discourse threads<a class="headerlink" href="#1-the-problem-with-long-running-discourse-threads" title="Permanent link">&para;</a></h2>
+<p>PEP and packaging discussions on Discourse are valuable primary sources: they capture objections, compromises, and decisions that never appear in the PEP text alone. They are also difficult to use as sources of truth or synthesis.</p>
+<h3 id="scale-and-fragmentation">Scale and fragmentation<a class="headerlink" href="#scale-and-fragmentation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>A single PEP may span <strong>multiple threads</strong> (initial proposal, revised drafts, spin-offs). There is no single page that contains the whole debate.</li>
+<li>Individual threads routinely reach <strong>hundreds of posts</strong> and tens of thousands of words—far beyond comfortable reading in the web UI.</li>
+<li>Discourse loads posts in <strong>pages</strong> (~20 at a time). Reading chronologically means endless scrolling, waiting, and losing place.</li>
+</ul>
+<h3 id="structure-that-hides-the-argument">Structure that hides the argument<a class="headerlink" href="#structure-that-hides-the-argument" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Posts are <strong>linear in time</strong> but <strong>non-linear in meaning</strong>. A reply may address post #3 while appearing after post #200.</li>
+<li>**<a href="https://meta.discourse.org/t/discourse-replies-and-quotes/**">Quote blocks</a> embed copies of earlier text. The same argument appears many times; the live thread repeats context you have already read.</li>
+<li><strong>Side threads</strong> emerge (technical detours, tooling, adjacent PEPs). The main line of the PEP decision is easy to lose.</li>
+</ul>
+<h3 id="weak-affordances-for-synthesis">Weak affordances for synthesis<a class="headerlink" href="#weak-affordances-for-synthesis" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Search finds <strong>mentions</strong>, not <strong>positions</strong>. It does not tell you who argued for what or how the consensus shifted.</li>
+<li>There is no built-in <strong>timeline of decisions</strong> (“we agreed to drop field X in post 142”).</li>
+<li><strong>Author identity</strong> is visible per post but not aggregated: seeing everything Brett Cannon or Paul Moore said requires manual filtering or external tools.</li>
+<li>Export is limited. Copy-paste loses metadata (post number, date, reply target). Bulk export is aimed at admins, not readers building an understanding of a PEP debate.</li>
+</ul>
+<h3 id="cost-for-different-readers">Cost for different readers<a class="headerlink" href="#cost-for-different-readers" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Reader need</th>
+<th>Pain today</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Newcomer catching up</td>
+<td>Overwhelmed; unclear where to start or stop</td>
+</tr>
+<tr>
+<td>PEP author / delegate</td>
+<td>Hard to ensure every objection was seen and addressed</td>
+</tr>
+<tr>
+<td>Historian / implementer</td>
+<td>Hard to reconstruct <em>why</em> the PEP reads the way it does</td>
+</tr>
+<tr>
+<td>Tooling / automation</td>
+<td>No stable, documented artifact to feed summarization or analysis</td>
+</tr>
+</tbody>
+</table>
+<h3 id="why-this-matters-for-kirigami">Why this matters for kirigami<a class="headerlink" href="#why-this-matters-for-kirigami" title="Permanent link">&para;</a></h3>
+<p>Kirigami is not trying to replace Discourse or the PEP process. It is trying to make the <strong>dialogue</strong> legible: preserved, navigable, and cuttable—without severing the link back to each original message.</p>
+<hr />
+<h2 id="2-principle-source-messages-remain-first-class">2. Principle: source messages remain first-class<a class="headerlink" href="#2-principle-source-messages-remain-first-class" title="Permanent link">&para;</a></h2>
+<p>Any kirigami solution <strong>must</strong> keep individual messages available as <strong>source messages</strong>—the authoritative text of what was said, in full, with provenance.</p>
+<h3 id="what-source-message-means">What “source message” means<a class="headerlink" href="#what-source-message-means" title="Permanent link">&para;</a></h3>
+<p>For each post in a thread, we retain (at minimum):</p>
+<ul>
+<li><strong>Identity:</strong> post id, post number, topic id, URL (or stable anchor)</li>
+<li><strong>Author:</strong> username (and display metadata when useful)</li>
+<li><strong>Time:</strong> created_at (and updated_at if edited)</li>
+<li><strong>Body:</strong> raw post content (Discourse markdown), not only HTML “cooked” output</li>
+<li><strong>Threading hints:</strong> reply_to_post_number, quotes, and other structural cues needed to place the message in the conversation</li>
+</ul>
+<h3 id="what-we-will-not-do">What we will not do<a class="headerlink" href="#what-we-will-not-do" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Replace source messages with summaries in the only copy of the archive</li>
+<li>Collapse a thread into a single narrative with no way to open the underlying post</li>
+<li>Paraphrase in a way that cannot be checked against the original in one step</li>
+</ul>
+<h3 id="how-summaries-relate-to-sources">How summaries relate to sources<a class="headerlink" href="#how-summaries-relate-to-sources" title="Permanent link">&para;</a></h3>
+<p>Summaries (thread-level, author-level, or per-message) are <strong>derived views</strong>. They always point back to source message ids / post numbers. A reader can move from “summary claim” → “exact post(s)” in one action.</p>
+<p>This principle supports trust, citation (“see post #47”), and future re-summarization when models or questions change.</p>
+<hr />
+<h2 id="3-goal-summarization-of-the-entire-thread">3. Goal: summarization of the entire thread<a class="headerlink" href="#3-goal-summarization-of-the-entire-thread" title="Permanent link">&para;</a></h2>
+<p>We want to produce a <strong>thread-level summary</strong>: a readable overview of what the conversation was about and how it developed.</p>
+<h3 id="intent">Intent<a class="headerlink" href="#intent" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Answer: <em>What was debated? What were the main options? What concerns dominated? Was there convergence or ongoing disagreement?</em></li>
+<li>Compress hundreds of posts into a narrative or structured outline that still reflects the <strong>arc</strong> of the discussion (opening proposal → challenges → revisions → closing themes).</li>
+<li>Suitable for someone who will not read every post but needs an honest map of the territory.</li>
+</ul>
+<h3 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Generated from the <strong>full set of source messages</strong> for that thread (or explicit subset with documented scope).</li>
+<li>Clearly labeled as <strong>synthesis</strong>, with metadata: thread title, date range, post count, model/method if automated.</li>
+<li><strong>Traceable</strong>: major summary sections or bullets link to supporting post numbers (or ranges).</li>
+<li><strong>Versionable</strong>: if the thread is re-fetched and new posts appear, the summary can be regenerated; old summary retained with <code>last_posted_at</code> or similar.</li>
+</ul>
+<h3 id="open-design-choices-for-later-iteration">Open design choices (for later iteration)<a class="headerlink" href="#open-design-choices-for-later-iteration" title="Permanent link">&para;</a></h3>
+<ul>
+<li>One summary vs. phased summaries (e.g. by month or by “draft round”)</li>
+<li>Human-authored overview + machine draft</li>
+<li>Length tiers: executive summary vs. detailed outline</li>
+</ul>
+<hr />
+<h2 id="4-goal-key-point-summarization-of-each-message">4. Goal: key-point summarization of each message<a class="headerlink" href="#4-goal-key-point-summarization-of-each-message" title="Permanent link">&para;</a></h2>
+<p>We want a <strong>per-message key-point summary</strong>: a short distillation of what that specific post contributes, not a rewrite of the whole thread.</p>
+<h3 id="intent_1">Intent<a class="headerlink" href="#intent_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Answer for post #<em>N</em>: <em>What is this person saying here, in one glance?</em></li>
+<li>Support skimming: read key points in post order, then drill into full source only where needed.</li>
+<li>Make long posts (common in PEP threads) approachable without losing the option to read every word.</li>
+</ul>
+<h3 id="requirements_1">Requirements<a class="headerlink" href="#requirements_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>One key-point block per source message</strong> (default), stored alongside—not instead of—the source.</li>
+<li>Key points capture: main claim, question, objection, agreement, or action item; not generic filler.</li>
+<li>Preserve <strong>post number and author</strong> on the key-point view so context is obvious.</li>
+<li>Traces to <strong>exact source</strong> (same id / anchor as §2).</li>
+</ul>
+<h3 id="relationship-to-thread-summary">Relationship to thread summary<a class="headerlink" href="#relationship-to-thread-summary" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Thread summary = holistic, cross-cutting.</li>
+<li>Message key points = local, sequential building blocks.</li>
+<li>Thread summary may be informed by key points, but must not orphan them: key points remain the granular index.</li>
+</ul>
+<hr />
+<h2 id="5-goal-author-centric-visualization">5. Goal: author-centric visualization<a class="headerlink" href="#5-goal-author-centric-visualization" title="Permanent link">&para;</a></h2>
+<p>We want to <strong>visualize everything said by a particular author</strong> in a thread (or PEP-related thread bundle), in three coupled layers:</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Raw</strong></td>
+<td>All source messages by that author, in time order, full <code>raw</code> text</td>
+</tr>
+<tr>
+<td><strong>Author view summary</strong></td>
+<td>One synthesis of that author’s overall position, themes, and shifts across their posts</td>
+</tr>
+<tr>
+<td><strong>Per-message summaries</strong></td>
+<td>Key-point summary for each of their posts (§4)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="intent_2">Intent<a class="headerlink" href="#intent_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>PEP debates are often read through <strong>who</strong> said what (BDFL-delegate, spec author, skeptic, tool maintainer).</li>
+<li>A reader can study one voice without manually searching <code>@username</code> in Discourse.</li>
+<li>Compare <strong>stated position</strong> (author summary) against <strong>exact wording</strong> (raw) and <strong>post-by-post evolution</strong> (key points over time).</li>
+</ul>
+<h3 id="visualization-conceptual">Visualization (conceptual)<a class="headerlink" href="#visualization-conceptual" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Author panel</strong> or profile: select author → see timeline of their posts.</li>
+<li>Each post on the timeline: expandable <strong>source</strong> + inline <strong>key points</strong>; thread-level context optional (e.g. “replying to #12”).</li>
+<li><strong>Author summary</strong> at top or side, updated when thread grows; links to posts cited in the summary.</li>
+</ul>
+<h3 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Single thread first; later optionally <strong>all threads for one PEP</strong> with author filter across threads.</li>
+<li>Handle authors with few posts (summary may be short or deferred) vs. very active participants.</li>
+</ul>
+<hr />
+<h2 id="6-goal-conversation-flow-visualization">6. Goal: conversation-flow visualization<a class="headerlink" href="#6-goal-conversation-flow-visualization" title="Permanent link">&para;</a></h2>
+<p>We want to <strong>visualize the flow of the conversation</strong> using timestamps and the structural flow of replies and quotes—not only a flat chronological list.</p>
+<h3 id="intent_3">Intent<a class="headerlink" href="#intent_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Answer: <em>When did activity peak? Where did the thread branch? Which posts anchored the longest sub-discussions?</em></li>
+<li>Make <strong>time</strong> and <strong>structure</strong> visible together: not just “post 1, 2, 3…” but “this cluster replied to post 5 over three days.”</li>
+</ul>
+<h3 id="inputs">Inputs<a class="headerlink" href="#inputs" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Timestamps</strong> on each source message (<code>created_at</code>, optionally edited)</li>
+<li><strong>Reply links</strong> (<code>reply_to_post_number</code> and Discourse reply metadata)</li>
+<li><strong>Quote references</strong> parsed from markdown where possible</li>
+<li>Optional: like/read counts as weak signals of prominence (not substitutes for content)</li>
+</ul>
+<h3 id="visualization-conceptual_1">Visualization (conceptual)<a class="headerlink" href="#visualization-conceptual_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Timeline view:</strong> posts (or author bands) along a time axis; density shows busy periods.</li>
+<li><strong>Thread graph:</strong> nodes = posts (or collapsed clusters); edges = reply-to or quote-to; layout by time or by tree depth.</li>
+<li><strong>Swimlanes by author:</strong> who spoke when; reduces “wall of avatars” in long threads.</li>
+<li><strong>Bridge to summaries:</strong> selecting a node shows source + key points; selecting a cluster may show a mini-summary of that branch.</li>
+</ul>
+<h3 id="success-criteria">Success criteria<a class="headerlink" href="#success-criteria" title="Permanent link">&para;</a></h3>
+<ul>
+<li>A reader can identify <strong>when</strong> a decision or mood shift occurred and <strong>which posts</strong> to read first.</li>
+<li>Flow views remain <strong>linked to source messages</strong> (click node → full post #<em>n</em>).</li>
+</ul>
+<hr />
+<h2 id="cross-cutting-themes">Cross-cutting themes<a class="headerlink" href="#cross-cutting-themes" title="Permanent link">&para;</a></h2>
+<h3 id="pep-specific-discourse-general">PEP-specific, Discourse-general<a class="headerlink" href="#pep-specific-discourse-general" title="Permanent link">&para;</a></h3>
+<p>The vision targets PEP discussions first (discover thread(s), long technical argument, link to peps.python.org). The <strong>source-first, layered summaries, author and flow views</strong> apply to any long Discourse thread kirigami ingests later.</p>
+<h3 id="kirigami-cut">Kirigami “cut”<a class="headerlink" href="#kirigami-cut" title="Permanent link">&para;</a></h3>
+<p>“Cut” means deliberate slices of dialogue: by author, by time window, by reply subtree, or by theme—not arbitrary truncation. Every cut must remain <strong>reversible</strong> to full source messages.</p>
+<h3 id="human-in-the-loop">Human in the loop<a class="headerlink" href="#human-in-the-loop" title="Permanent link">&para;</a></h3>
+<p>Summaries may be model-assisted, but the product assumes <strong>verification</strong> against sources is normal. Citations (post numbers) are a feature, not an implementation detail.</p>
+<hr />
+<h2 id="out-of-scope-for-this-vision-for-now">Out of scope for this vision (for now)<a class="headerlink" href="#out-of-scope-for-this-vision-for-now" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Replacing Discourse or commenting there</li>
+<li>Real-time sync or notifications</li>
+<li>Deciding PEP outcomes or voting</li>
+<li>Publishing summaries as official PEP text without community process</li>
+</ul>
+<hr />
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Need</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Acknowledge why long Discourse threads (especially PEP threads) are hard to read and use</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Source messages</strong> always available, full and citable</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Whole-thread</strong> summarization with traceability</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Per-message</strong> key-point summarization</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Author-centric</strong> views: raw + author summary + per-message summaries</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Flow</strong> views from timestamps and conversation structure</td>
+</tr>
+</tbody>
+</table>
+<p>Implementation plans, data schemas, and CLI design come <strong>after</strong> this vision stabilizes. Feedback on this document should refine <em>what</em> we are building for readers of PEP dialogue—not yet <em>how</em> every module is named.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":[],"search":"../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.6e5f0216.min.js"></script>
+      
+    
+  </body>
+</html>

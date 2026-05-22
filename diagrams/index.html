@@ -1,0 +1,1548 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://willingc.github.io/kirigami/diagrams/">
+      
+      
+        <link rel="prev" href="../vision/">
+      
+      
+        <link rel="next" href="../diagram-overview/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.43">
+    
+    
+      
+        <title>Vision diagrams - kirigami</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.fba56155.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#vision-diagrams" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="kirigami" class="md-header__button md-logo" aria-label="kirigami" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            kirigami
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Vision diagrams
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/willingc/kirigami" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    willingc/kirigami
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="kirigami" class="md-nav__button md-logo" aria-label="kirigami" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    kirigami
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/willingc/kirigami" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    willingc/kirigami
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Home
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usecase/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Use case
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../systems_thinking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Systems Thinking
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../current-state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Current state
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../nlp-current/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Current NLP
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vision/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Vision
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Diagrams
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Diagrams
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Color legend
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Color legend
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#diagram-pages" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Diagram pages
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Source files
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#color-legend" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Color legend
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Color legend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timeline-and-graph-accents-author-flow-diagram-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Timeline and graph accents (author-flow diagram only)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arrows-and-lines" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Arrows and lines
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-diagram-kirigami-visionexcalidraw" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Overview diagram (<code>kirigami-vision.excalidraw</code>)
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#author-flow-diagram-kirigami-vision-author-flowexcalidraw" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Author &amp; flow diagram (<code>kirigami-vision-author-flow.excalidraw</code>)
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Author &amp; flow diagram (kirigami-vision-author-flow.excalidraw)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5-author-centric-visualization-left" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        §5 Author-centric visualization (left)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-conversation-flow-visualization-right" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        §6 Conversation-flow visualization (right)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mapping-to-visionmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Mapping to <code>vision.md</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#regenerating-pngs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Regenerating PNGs
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#editing-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Editing tips
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Related documentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../diagram-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Overview
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../diagram-author-flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Author and flow
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Research
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Research
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../researchers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Researchers
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research-signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Research signals
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Earlier work
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Earlier work
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Tools
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../json_tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  JSON Tools
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../realworld/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Real World
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#diagram-pages" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Diagram pages
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Source files
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#color-legend" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Color legend
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Color legend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timeline-and-graph-accents-author-flow-diagram-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Timeline and graph accents (author-flow diagram only)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arrows-and-lines" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Arrows and lines
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview-diagram-kirigami-visionexcalidraw" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Overview diagram (<code>kirigami-vision.excalidraw</code>)
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#author-flow-diagram-kirigami-vision-author-flowexcalidraw" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Author &amp; flow diagram (<code>kirigami-vision-author-flow.excalidraw</code>)
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Author &amp; flow diagram (kirigami-vision-author-flow.excalidraw)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5-author-centric-visualization-left" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        §5 Author-centric visualization (left)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-conversation-flow-visualization-right" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        §6 Conversation-flow visualization (right)
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mapping-to-visionmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Mapping to <code>vision.md</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#regenerating-pngs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Regenerating PNGs
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#editing-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Editing tips
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Related documentation
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+<h1 id="vision-diagrams">Vision diagrams<a class="headerlink" href="#vision-diagrams" title="Permanent link">&para;</a></h1>
+<p>Excalidraw diagrams illustrate <a href="../vision/">Vision</a>. Published PNGs are on dedicated pages; source <code>.excalidraw</code> files remain editable in <a href="https://excalidraw.com">Excalidraw</a> or Excalidraw+.</p>
+<p>Current implementation note: the diagrams still include roadmap concepts such as generated summaries and full graph/swimlane views. The implemented reader is described in <a href="../nlp-current/">Current NLP</a>: PEP metadata enrichment, PEP role tags, Thread Radar, deterministic signal evidence, issue cards, and source-linked Evidence Map status.</p>
+<h2 id="diagram-pages">Diagram pages<a class="headerlink" href="#diagram-pages" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../diagram-overview/">Overview</a></td>
+<td>End-to-end: problem → source principle → ingest → <code>ThreadDocument</code> → derived views (§1–§6)</td>
+</tr>
+<tr>
+<td><a href="../diagram-author-flow/">Author and flow</a></td>
+<td>Reader experiences: author panel (§5) and conversation flow (§6)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="source-files">Source files<a class="headerlink" href="#source-files" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../kirigami-vision.excalidraw">kirigami-vision.excalidraw</a></td>
+<td>Editable source for the overview diagram</td>
+</tr>
+<tr>
+<td><a href="../kirigami-vision-author-flow.excalidraw">kirigami-vision-author-flow.excalidraw</a></td>
+<td>Editable source for the author / flow diagram</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="color-legend">Color legend<a class="headerlink" href="#color-legend" title="Permanent link">&para;</a></h2>
+<p>Colors are consistent across both diagrams. Fill is the box background; stroke is the border (usually a darker shade of the same hue).</p>
+<table>
+<thead>
+<tr>
+<th>Fill</th>
+<th>Stroke</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#ffc9c9</code></td>
+<td><code>#e03131</code></td>
+<td><strong>Problem / constraint</strong> — pain points, hard requirements, “must link to post #”</td>
+</tr>
+<tr>
+<td><code>#b2f2bb</code></td>
+<td><code>#2f9e44</code></td>
+<td><strong>Source / success</strong> — first-class source messages, raw posts, success criteria</td>
+</tr>
+<tr>
+<td><code>#fff3bf</code></td>
+<td><code>#f08c00</code></td>
+<td><strong>External input / time</strong> — Discourse, timelines, author selection, human context</td>
+</tr>
+<tr>
+<td><code>#d0bfff</code></td>
+<td><code>#7950f2</code></td>
+<td><strong>Processing</strong> — acquire/fetch, swimlanes, system steps</td>
+</tr>
+<tr>
+<td><code>#96f2d7</code></td>
+<td><code>#0ca678</code></td>
+<td><strong>Core data hub</strong> — <code>ThreadDocument</code> (complete archive of source posts)</td>
+</tr>
+<tr>
+<td><code>#e7f5ff</code></td>
+<td><code>#1971c2</code></td>
+<td><strong>Derived synthesis</strong> — summaries and views built from sources (§3–§6)</td>
+</tr>
+<tr>
+<td><code>#ffec99</code></td>
+<td><code>#e67700</code></td>
+<td><strong>Kirigami product</strong> — “cut”, comparison callouts, human verification</td>
+</tr>
+<tr>
+<td><code>#f1f3f5</code></td>
+<td><code>#868e96</code></td>
+<td><strong>Neutral / out of scope</strong> — notes, scope limits, optional metadata</td>
+</tr>
+</tbody>
+</table>
+<h3 id="timeline-and-graph-accents-author-flow-diagram-only">Timeline and graph accents (author-flow diagram only)<a class="headerlink" href="#timeline-and-graph-accents-author-flow-diagram-only" title="Permanent link">&para;</a></h3>
+<p>These appear on small nodes (ellipses) along the timeline or in sample graphs:</p>
+<table>
+<thead>
+<tr>
+<th>Fill</th>
+<th>Stroke</th>
+<th>Typical use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#ffd8a8</code></td>
+<td><code>#495057</code></td>
+<td>Early / opening posts (e.g. post #1)</td>
+</tr>
+<tr>
+<td><code>#ffc9c9</code></td>
+<td><code>#495057</code></td>
+<td>Highlighted or pivotal posts</td>
+</tr>
+<tr>
+<td><code>#d0bfff</code></td>
+<td><code>#495057</code></td>
+<td>Mid-thread activity</td>
+</tr>
+<tr>
+<td><code>#a5d8ff</code></td>
+<td><code>#495057</code></td>
+<td>Later posts</td>
+</tr>
+<tr>
+<td><code>#ffffff</code></td>
+<td><code>#1971c2</code></td>
+<td>Generic reply-graph nodes</td>
+</tr>
+</tbody>
+</table>
+<p>Stroke <code>#495057</code> on ellipses is neutral gray for small markers without assigning semantic category.</p>
+<hr />
+<h2 id="arrows-and-lines">Arrows and lines<a class="headerlink" href="#arrows-and-lines" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Style</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Solid black</strong> (<code>#1e1e1e</code>)</td>
+<td>Primary flow: data movement, “feeds”, or reading order</td>
+</tr>
+<tr>
+<td><strong>Solid green</strong> (<code>#0ca678</code>)</td>
+<td>Connection to shared <code>ThreadDocument</code> hub</td>
+</tr>
+<tr>
+<td><strong>Solid blue</strong> (<code>#1971c2</code>)</td>
+<td>Reply-to edges in sample reply graph</td>
+</tr>
+<tr>
+<td><strong>Dashed gray</strong> (<code>#868e96</code>)</td>
+<td>Optional, derived, or “informed by” (e.g. summary informed by posts above)</td>
+</tr>
+</tbody>
+</table>
+<p>Arrows point in the direction of dependency or reader drill-down (e.g. hub → derived views, summary → post #).</p>
+<hr />
+<h2 id="overview-diagram-kirigami-visionexcalidraw">Overview diagram (<code>kirigami-vision.excalidraw</code>)<a class="headerlink" href="#overview-diagram-kirigami-visionexcalidraw" title="Permanent link">&para;</a></h2>
+<p>Left-to-right flow:</p>
+<ol>
+<li><strong>§1 Problem</strong> (red) — why long PEP threads on Discourse are hard to use.</li>
+<li><strong>§2 Source messages</strong> (green) — non-negotiable: full posts with provenance; summaries cite post numbers.</li>
+<li><strong>discuss.python.org</strong> (yellow) → <strong>Kirigami acquire</strong> (purple) → <strong>ThreadDocument</strong> (teal).</li>
+<li><strong>Derived views</strong> (blue), all fed from the hub:</li>
+<li>§3 Thread summary</li>
+<li>§4 Per-message key points</li>
+<li>§5 Author view</li>
+<li>§6 Flow view</li>
+<li><strong>Human verifies citations</strong> and <strong>Kirigami cut</strong> (amber) — cross-cutting product behavior.</li>
+<li><strong>Out of scope</strong> (gray) — what kirigami is not trying to do.</li>
+</ol>
+<p>Green <strong>§2</strong> also connects to <strong>ThreadDocument</strong> to show that the archive is the source-of-truth layer under all derived views.</p>
+<hr />
+<h2 id="author-flow-diagram-kirigami-vision-author-flowexcalidraw">Author &amp; flow diagram (<code>kirigami-vision-author-flow.excalidraw</code>)<a class="headerlink" href="#author-flow-diagram-kirigami-vision-author-flowexcalidraw" title="Permanent link">&para;</a></h2>
+<p>Split canvas: <strong>§5</strong> (left) and <strong>§6</strong> (right), linked by a teal <strong>ThreadDocument</strong> bridge.</p>
+<h3 id="5-author-centric-visualization-left">§5 Author-centric visualization (left)<a class="headerlink" href="#5-author-centric-visualization-left" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Color</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Select author</td>
+<td>Yellow</td>
+<td>Entry: filter by <code>@username</code> (one thread or PEP bundle)</td>
+</tr>
+<tr>
+<td>Author view summary</td>
+<td>Blue</td>
+<td>Holistic synthesis of that author’s position</td>
+</tr>
+<tr>
+<td>Post rows (×3)</td>
+<td>Green</td>
+<td>Per post: key points + expandable raw source</td>
+</tr>
+<tr>
+<td>Compare callout</td>
+<td>Amber</td>
+<td>Compare summary vs raw vs evolution over time</td>
+</tr>
+<tr>
+<td>Post # anchor</td>
+<td>Red</td>
+<td>Every layer must link to a post number</td>
+</tr>
+<tr>
+<td>Scope note</td>
+<td>Gray</td>
+<td>Start with one thread; extend to all PEP threads later</td>
+</tr>
+</tbody>
+</table>
+<p>Dashed gray arrows: author summary informed by posts below.</p>
+<h3 id="6-conversation-flow-visualization-right">§6 Conversation-flow visualization (right)<a class="headerlink" href="#6-conversation-flow-visualization-right" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Color</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Timeline header</td>
+<td>Yellow</td>
+<td>Time axis using <code>created_at</code></td>
+</tr>
+<tr>
+<td>Timeline dots</td>
+<td>Accent fills</td>
+<td>Example posts (#1, #12, #47, …)</td>
+</tr>
+<tr>
+<td>Reply graph</td>
+<td>Blue</td>
+<td>Nodes = posts; edges = reply-to</td>
+</tr>
+<tr>
+<td>Swimlanes</td>
+<td>Purple</td>
+<td>One lane per author over time</td>
+</tr>
+<tr>
+<td>Inputs</td>
+<td>Gray</td>
+<td>Timestamps, <code>reply_to_post_number</code>, quote parsing</td>
+</tr>
+<tr>
+<td>Success</td>
+<td>Green</td>
+<td>Find decision shifts; every node opens full post #<em>n</em></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="mapping-to-visionmd">Mapping to <code>vision.md</code><a class="headerlink" href="#mapping-to-visionmd" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Vision section</th>
+<th>Overview diagram</th>
+<th>Author-flow diagram</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§1 Problem</td>
+<td>Red box</td>
+<td>—</td>
+</tr>
+<tr>
+<td>§2 Source messages</td>
+<td>Green box</td>
+<td>Green post rows; red “post # anchor”</td>
+</tr>
+<tr>
+<td>§3 Thread summary</td>
+<td>Blue box</td>
+<td>—</td>
+</tr>
+<tr>
+<td>§4 Per-message key points</td>
+<td>Blue box</td>
+<td>Inside each green post row</td>
+</tr>
+<tr>
+<td>§5 Author view</td>
+<td>Blue box (summary)</td>
+<td>Full left panel</td>
+</tr>
+<tr>
+<td>§6 Flow view</td>
+<td>Blue box</td>
+<td>Full right panel</td>
+</tr>
+<tr>
+<td>Cross-cutting: cut</td>
+<td>Amber box</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Cross-cutting: human in the loop</td>
+<td>Amber box</td>
+<td>Compare + verification</td>
+</tr>
+<tr>
+<td>Out of scope</td>
+<td>Gray box</td>
+<td>Gray scope note</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="regenerating-pngs">Regenerating PNGs<a class="headerlink" href="#regenerating-pngs" title="Permanent link">&para;</a></h2>
+<p>After editing a <code>.excalidraw</code> file, re-export PNGs from the repo root (requires <a href="https://nodejs.org/">Node.js</a> and network for <code>npx</code>):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>npx<span class="w"> </span>excalidraw2png<span class="w"> </span>convert<span class="w"> </span>docs/kirigami-vision.excalidraw<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>-o<span class="w"> </span>docs/images/kirigami-vision-overview.png<span class="w"> </span>--scale<span class="w"> </span><span class="m">2</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>npx<span class="w"> </span>excalidraw2png<span class="w"> </span>convert<span class="w"> </span>docs/kirigami-vision-author-flow.excalidraw<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span>-o<span class="w"> </span>docs/images/kirigami-vision-author-flow.png<span class="w"> </span>--scale<span class="w"> </span><span class="m">2</span>
+</span></code></pre></div>
+<p>Or run the helper script:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>./scripts/export-diagrams.sh
+</span></code></pre></div>
+<p>Commit both the updated <code>.excalidraw</code> and <code>.png</code> files when diagram content changes.</p>
+<h2 id="editing-tips">Editing tips<a class="headerlink" href="#editing-tips" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Load <code>.excalidraw</code> files from <code>docs/</code> in Excalidraw+.</li>
+<li>Use <strong>Frames</strong> to group §5 / §6 on the author-flow canvas for cleaner exports.</li>
+<li>Keep fill/stroke pairs aligned with the legend above so both diagrams stay visually consistent.</li>
+<li>Regenerate PNGs and verify <a href="../diagram-overview/">Overview</a> and <a href="../diagram-author-flow/">Author and flow</a> in a local docs build (<code>mise run docs:serve</code>).</li>
+</ol>
+<hr />
+<h2 id="related-documentation">Related documentation<a class="headerlink" href="#related-documentation" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../vision/">Vision</a> — full product vision (source of truth for diagram content)</li>
+<li><a href="../">Home</a> — kirigami introduction</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":[],"search":"../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.6e5f0216.min.js"></script>
+      
+    
+  </body>
+</html>
