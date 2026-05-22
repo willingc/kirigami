@@ -1,6 +1,6 @@
 # kirigami
 
-[Application](https://kirigami.fastapicloud.dev/) | [Documentation](https://willingc.github.io/kirigami/)
+[Application](https://kirigami.fastapicloud.dev/) | [Documentation](https://pykirigami.github.io/kirigami/)
 
 Kirigami is a Python toolkit for reorganizing and analyzing dialogue-oriented
 text. This repository now includes a starter web application with a Next.js
@@ -46,15 +46,6 @@ mise run deploy:fastapi
 
 See [FASTAPI.md](FASTAPI.md) for FastAPI Cloud deploy details.
 
-Build and preview the documentation site (Zensical):
-
-```bash
-mise run docs:build
-mise run docs:serve
-```
-
-Published at [willingc.github.io/kirigami](https://willingc.github.io/kirigami/) from the `gh-pages` branch on push to `main`.
-
 Run the Python and frontend checks:
 
 ```bash
@@ -90,6 +81,17 @@ The deploy wrapper starts a Nix-provided Docker daemon when one is not already
 available at `DOCKER_HOST`. Its default storage path is
 `KIRIGAMI_DOCKER_DATA_ROOT=/opt/kirigami-docker`; point that variable at a
 mounted volume when the root disk is small.
+
+## Documentation
+
+Build and preview the documentation site (Zensical):
+
+```bash
+mise run docs:build
+mise run docs:serve
+```
+
+Published at [pykirigami.github.io/kirigami](https://pykirigami.github.io/kirigami/) from the `gh-pages` branch on push to `main`.
 
 ## Gratitude
 
