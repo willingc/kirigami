@@ -26,8 +26,6 @@
             caddy
             coreutils
             curl
-            docker
-            docker-compose
             git
             gnumake
             jq
